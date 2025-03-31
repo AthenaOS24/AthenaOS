@@ -1,14 +1,14 @@
 # AthenaOS
 
-## A Therapeutic AI Agent for Mental Health Support
+## 🌟 A Therapeutic AI Agent for Mental Health Support
 
 AthenaOS is an advanced Therapeutic AI Agent designed to harness Generative Artificial Intelligence (GenAI) to create an accessible, scalable, and personalized mental health support system. Named after Athena, the Greek goddess of wisdom, our system aims to provide thoughtful, evidence-based mental health assistance.
 
-## Mission
+## ✨ Mission
 
 AthenaOS seeks to bridge the gap in mental health services, especially for individuals in underserved or remote areas, by offering 24/7 support. The system incorporates evidence-based therapeutic approaches, such as Cognitive Behavioral Therapy (CBT), to guide interactions and deliver interventions tailored to individual needs.
 
-## Key Features
+## 🛠️ Key Features
 
 - **Intelligent Therapeutic Conversations**: Engages users in meaningful dialogue using advanced natural language processing
 - **Evidence-Based Methodology**: Implements recognized therapeutic techniques like CBT
@@ -16,7 +16,7 @@ AthenaOS seeks to bridge the gap in mental health services, especially for indiv
 - **Privacy-Focused**: Ensures all user data is encrypted and stored securely
 - **Complementary Care**: Designed to work alongside traditional therapy, not replace it
 
-## Technical Foundation
+## 🔬 Technical Foundation
 
 AthenaOS is built on cutting-edge AI technology with specialized training in psychological principles and therapeutic methodologies.
 
@@ -28,14 +28,15 @@ Ethical considerations, including data privacy and user safety, are paramount in
 
 The project is in active development. We welcome contributions from developers, mental health professionals, and researchers.
 
-## Contributing
+## 🤝 Contributing
 
 Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
 
-## License
+## 📜 License
 
 [MIT License](LICENSE)
 
-## Contact
+## 📞 Contact
 
-For more information, please contact [your contact information]
+For more information, please contact AthenaOS Issues
+
