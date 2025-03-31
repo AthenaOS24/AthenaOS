@@ -1,4 +1,4 @@
-# AthenaOS
+# 🤖 AthenaOS
 
 ## 🌟 A Therapeutic AI Agent for Mental Health Support
 
