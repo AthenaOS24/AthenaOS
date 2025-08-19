@@ -1,0 +1,140 @@
+/* Google font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+.blog-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: 'Inter', sans-serif;
+  background-color: #fafafa;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.blog-container.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.blog-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.blog-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.blog-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.blog-divider::before,
+.blog-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.divider-text {
+  padding: 0 0.5rem;
+  color: #007bff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.blog-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.blog-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  padding: 1.5rem;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+}
+
+.blog-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.post-image {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.post-header-text {
+  flex: 1;
+}
+
+.post-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.post-date {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.post-excerpt {
+  color: #555;
+  margin: 1rem 0;
+}
+
+.toggle-details {
+  background-color: #007bff;
+  color: white;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.toggle-details:hover {
+  background-color: #0056b3;
+  transform: scale(1.03);
+}
+
+/* Dropdown animation */
+.dropdown-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+}
+
+.dropdown-wrapper.open {
+  max-height: 500px;
+  padding-top: 0.5rem;
+}
+
+.post-details {
+  background: #f9f9f9;
+  border-left: 3px solid #007bff;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  color: #444;
+  border-radius: 4px;
+}
