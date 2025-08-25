@@ -10,15 +10,11 @@ async function getGoogleAiResponse(prompt) {
             contents: [{ parts: [{ text: prompt }] }],
         });
 
-        // Trích xuất và trả về nội dung văn bản từ phản hồi của AI
         return response.data.candidates[0].content.parts[0].text;
     } catch (error) {
-        // Ghi lại lỗi chi tiết nếu có vấn đề khi gọi API
         console.error("Error calling Google AI API:", error.response ? error.response.data : error.message);
-        // Trả về một câu trả lời mặc định khi có lỗi
         return "I'm sorry, I'm having trouble connecting to my brain right now. Please try again later.";
     }
 }
 
-// Export hàm để các file khác có thể sử dụng
 module.exports = { getGoogleAiResponse };

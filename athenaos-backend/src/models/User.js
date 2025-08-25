@@ -1,12 +1,11 @@
 // src/models/User.js
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db'); // Import instance sequelize từ config
+const { sequelize } = require('../config/db');  
 
 const User = sequelize.define('User', {
-    // Định nghĩa các thuộc tính của model
     username: {
         type: DataTypes.STRING,
-        allowNull: false, // Tương đương với required: true
+        allowNull: false, 
         unique: true
     },
     email: {
@@ -19,8 +18,8 @@ const User = sequelize.define('User', {
         allowNull: false
     }
 }, {
-    // Các tùy chọn khác
-    timestamps: true // Tự động thêm createdAt và updatedAt
+  
+    timestamps: true 
 });
 
 module.exports = User;
