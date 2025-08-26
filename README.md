@@ -1,12 +1,12 @@
-# 🤖 AthenaOS
+# 🤖 AthenaAI
 
 ## 🌟 A Therapeutic AI Agent for Mental Health Support
 
-AthenaOS is an advanced Therapeutic AI Agent designed to harness Generative Artificial Intelligence (GenAI) to create an accessible, scalable, and personalized mental health support system. Named after Athena, the Greek goddess of wisdom, our system aims to provide thoughtful, evidence-based mental health assistance.
+AthenaAI is an advanced Therapeutic AI Agent designed to harness Generative Artificial Intelligence (GenAI) to create an accessible, scalable, and personalized mental health support system. Named after Athena, the Greek goddess of wisdom, our system aims to provide thoughtful, evidence-based mental health assistance.
 
 ## ✨ Mission
 
-AthenaOS seeks to bridge the gap in mental health services, especially for individuals in underserved or remote areas, by offering 24/7 support. The system incorporates evidence-based therapeutic approaches, such as Cognitive Behavioral Therapy (CBT), to guide interactions and deliver interventions tailored to individual needs.
+AthenaAI seeks to bridge the gap in mental health services, especially for individuals in underserved or remote areas, by offering 24/7 support. The system incorporates evidence-based therapeutic approaches, such as Cognitive Behavioral Therapy (CBT), to guide interactions and deliver interventions tailored to individual needs.
 
 ## 🛠️ Key Features
 
@@ -18,11 +18,11 @@ AthenaOS seeks to bridge the gap in mental health services, especially for indiv
 
 ## 🔬 Technical Foundation
 
-AthenaOS is built on cutting-edge AI technology with specialized training in psychological principles and therapeutic methodologies.
+AthenaAI is built on cutting-edge AI technology with specialized training in psychological principles and therapeutic methodologies.
 
 ## Ethical Considerations
 
-Ethical considerations, including data privacy and user safety, are paramount in our design. While AthenaOS is developed to provide valuable mental health support, it is not intended to replace human therapists, particularly in cases of severe mental health conditions.
+Ethical considerations, including data privacy and user safety, are paramount in our design. While AthenaAI is developed to provide valuable mental health support, it is not intended to replace human therapists, particularly in cases of severe mental health conditions.
 
 ## Current Status
 
@@ -38,5 +38,5 @@ Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contr
 
 ## 📞 Contact
 
-For more information, please contact AthenaOS Issues
+For more information, please contact AthenaAI Issues
 
