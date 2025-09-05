@@ -60,7 +60,7 @@ async def query_hf_api(model_id: str, payload: dict):
     api_url = f"{HF_API_URL}{model_id}"
     
     async with httpx.AsyncClient() as client:
-        response = await client.post(api_url, headers=headers, json=payload, timeout=30)
+        response = await client.post(api_url, headers=headers, json=payload, timeout=90)
         response.raise_for_status()
         return response.json()
 
