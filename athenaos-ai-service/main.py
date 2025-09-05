@@ -4,18 +4,17 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 
-# --- API Keys and Model ID Configuration ---
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+# --- Cấu hình API Keys và Model IDs ---
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-# IDs of the models on the Hugging Face Hub that we will use via API
+# ID của các mô hình trên Hugging Face Hub mà chúng ta sẽ sử dụng qua API
+LLM_MODEL_ID = "meta-llama/Llama-2-7b-chat-hf" # Mô hình chính Llama 2
 SENTIMENT_MODEL_ID = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
 EMOTION_MODEL_ID = "SamLowe/roberta-base-go_emotions"
-EMBEDDING_MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
 
 HF_API_URL = "https://api-inference.huggingface.co/models/"
 
-# --- API Calling Functions (Replaces local model loading) ---
+# --- Các hàm gọi API ---
 
 async def query_hf_api(model_id: str, payload: dict):
     """General function to query the Hugging Face Inference API."""
@@ -27,57 +26,41 @@ async def query_hf_api(model_id: str, payload: dict):
     
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(api_url, headers=headers, json=payload, timeout=20)
+            response = await client.post(api_url, headers=headers, json=payload, timeout=45)
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as e:
-            # API Error from Hugging Face for model...
             print(f"API Error from Hugging Face for model {model_id}: {e.response.text}")
-            raise HTTPException(status_code=502, detail=f"Error response from Hugging Face API for {model_id}.")
+            raise HTTPException(status_code=502, detail=f"Error from HF API for {model_id}: {e.response.text}")
         except Exception as e:
-            # Unknown error when calling Hugging Face API
             print(f"Unknown error when calling Hugging Face API: {e}")
             raise HTTPException(status_code=500, detail="An internal error occurred with Hugging Face API.")
 
+async def generate_response_from_hf_llm(user_input: str, history: list):
+    """Function to get a response from a Hugging Face LLM."""
+    # Note: Formatting the prompt is important for chat models. This is a simple example.
+    # You might need a more complex prompt template for better results.
+    prompt = f"User: {user_input}\nAssistant:"
+    
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 250,
+            "return_full_text": False
+        }
+    }
+    response = await query_hf_api(LLM_MODEL_ID, payload)
+    return response[0]['generated_text']
+
 async def analyze_sentiment_api(text: str):
-    """Analyze sentiment (Positive/Negative) using the API."""
+    """Analyze sentiment using the API."""
     payload = {"inputs": text}
     return await query_hf_api(SENTIMENT_MODEL_ID, payload)
 
 async def analyze_emotion_api(text: str):
-    """Analyze detailed emotions (joy, sadness, anger, etc.) using the API."""
+    """Analyze detailed emotions using the API."""
     payload = {"inputs": text}
     return await query_hf_api(EMOTION_MODEL_ID, payload)
-
-async def get_embedding_api(text: str):
-    """Create a text embedding (vector) using the API."""
-    # This specific API requires a list of inputs
-    payload = {"inputs": [text]} 
-    return await query_hf_api(EMBEDDING_MODEL_ID, payload)
-
-async def generate_response_from_openrouter(user_input: str, history: list):
-    """Function to call the OpenRouter API to get a response from the LLM."""
-    if not OPENROUTER_API_KEY:
-        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY is not set.")
-
-    messages = [{"role": "system", "content": "You are Athena, a compassionate AI therapist."}]
-    messages.extend(history)
-    messages.append({"role": "user", "content": user_input})
-
-    headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}"}
-    
-    # ==============================================================================
-    # THAY ĐỔI MÔ HÌNH CHÍNH TẠI ĐÂY
-    # ==============================================================================
-    json_data = {
-        "model": "meta-llama/llama-2-7b-chat", # Đã đổi sang Llama 2 7B
-        "messages": messages
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=json_data, timeout=30)
-        response.raise_for_status()
-        return response.json()['choices'][0]['message']['content']
 
 # --- Initialize FastAPI App ---
 
@@ -89,7 +72,6 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-    """Root endpoint to check if the API is running."""
     return {"status": "Athena AI API is running"}
 
 @app.post("/chat")
@@ -99,8 +81,8 @@ async def handle_chat(request: ChatRequest):
     if not sanitized_input:
         raise HTTPException(status_code=400, detail="User input is empty.")
 
-    # Get the response from the AI (LLM)
-    ai_response = await generate_response_from_openrouter(sanitized_input, request.history)
+    # Get the response from the AI (LLM on Hugging Face)
+    ai_response = await generate_response_from_hf_llm(sanitized_input, request.history)
 
     # Perform other analyses using APIs
     sentiment_data = await analyze_sentiment_api(sanitized_input)
