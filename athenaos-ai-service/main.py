@@ -1,14 +1,19 @@
 import os
 import httpx
+import google.generativeai as genai
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict
 
 # --- Cấu hình API Keys và Model IDs ---
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-# ID của các mô hình trên Hugging Face Hub mà chúng ta sẽ sử dụng qua API
-LLM_MODEL_ID = "meta-llama/Llama-2-7b-chat-hf" # Mô hình chính Llama 2
+# Cấu hình Gemini API client
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+
+# ID của các mô hình trên Hugging Face Hub
 SENTIMENT_MODEL_ID = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
 EMOTION_MODEL_ID = "SamLowe/roberta-base-go_emotions"
 
@@ -16,8 +21,38 @@ HF_API_URL = "https://api-inference.huggingface.co/models/"
 
 # --- Các hàm gọi API ---
 
+def convert_history_to_gemini_format(history: List[Dict]) -> List[Dict]:
+    """Chuyển đổi lịch sử từ dạng {"role": "assistant", ...} sang {"role": "model", ...}."""
+    gemini_history = []
+    for message in history:
+        role = "model" if message["role"] == "assistant" else message["role"]
+        gemini_history.append({
+            "role": role,
+            "parts": [message["content"]]
+        })
+    return gemini_history
+
+async def generate_response_from_gemini(user_input: str, history: List[Dict]):
+    """Lấy phản hồi từ Google Gemini API."""
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not set.")
+    
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        
+        # Chuyển đổi định dạng lịch sử và bắt đầu phiên chat
+        gemini_history = convert_history_to_gemini_format(history)
+        chat = model.start_chat(history=gemini_history)
+        
+        # Gửi tin nhắn mới và nhận phản hồi
+        response = await chat.send_message_async(user_input)
+        return response.text
+    except Exception as e:
+        print(f"Error from Gemini API: {e}")
+        raise HTTPException(status_code=502, detail=f"An error occurred with the Gemini API: {e}")
+
 async def query_hf_api(model_id: str, payload: dict):
-    """General function to query the Hugging Face Inference API."""
+    """Hàm chung để gọi Hugging Face Inference API."""
     if not HF_TOKEN:
         raise HTTPException(status_code=500, detail="HF_TOKEN is not set.")
     
@@ -25,44 +60,21 @@ async def query_hf_api(model_id: str, payload: dict):
     api_url = f"{HF_API_URL}{model_id}"
     
     async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(api_url, headers=headers, json=payload, timeout=45)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            print(f"API Error from Hugging Face for model {model_id}: {e.response.text}")
-            raise HTTPException(status_code=502, detail=f"Error from HF API for {model_id}: {e.response.text}")
-        except Exception as e:
-            print(f"Unknown error when calling Hugging Face API: {e}")
-            raise HTTPException(status_code=500, detail="An internal error occurred with Hugging Face API.")
-
-async def generate_response_from_hf_llm(user_input: str, history: list):
-    """Function to get a response from a Hugging Face LLM."""
-    # Note: Formatting the prompt is important for chat models. This is a simple example.
-    # You might need a more complex prompt template for better results.
-    prompt = f"User: {user_input}\nAssistant:"
-    
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 250,
-            "return_full_text": False
-        }
-    }
-    response = await query_hf_api(LLM_MODEL_ID, payload)
-    return response[0]['generated_text']
+        response = await client.post(api_url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        return response.json()
 
 async def analyze_sentiment_api(text: str):
-    """Analyze sentiment using the API."""
+    """Phân tích cảm xúc bằng API."""
     payload = {"inputs": text}
     return await query_hf_api(SENTIMENT_MODEL_ID, payload)
 
 async def analyze_emotion_api(text: str):
-    """Analyze detailed emotions using the API."""
+    """Phân tích cảm xúc chi tiết bằng API."""
     payload = {"inputs": text}
     return await query_hf_api(EMOTION_MODEL_ID, payload)
 
-# --- Initialize FastAPI App ---
+# --- Khởi tạo ứng dụng FastAPI ---
 
 app = FastAPI(title="Athena AI Therapist API")
 
@@ -76,15 +88,15 @@ def read_root():
 
 @app.post("/chat")
 async def handle_chat(request: ChatRequest):
-    """Main endpoint to handle chat requests."""
+    """Endpoint chính để xử lý yêu cầu chat."""
     sanitized_input = request.user_input.strip()
     if not sanitized_input:
         raise HTTPException(status_code=400, detail="User input is empty.")
 
-    # Get the response from the AI (LLM on Hugging Face)
-    ai_response = await generate_response_from_hf_llm(sanitized_input, request.history)
+    # Lấy phản hồi từ AI (Gemini)
+    ai_response = await generate_response_from_gemini(sanitized_input, request.history)
 
-    # Perform other analyses using APIs
+    # Thực hiện các phân tích khác bằng APIs
     sentiment_data = await analyze_sentiment_api(sanitized_input)
     emotion_data = await analyze_emotion_api(sanitized_input)
 
