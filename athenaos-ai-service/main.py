@@ -9,9 +9,9 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 MODEL_BASE_PATH = "models"
 
 # Model 1: Moderation
-moderation_path = os.path.join(MODEL_BASE_PATH, "moderation")
-moderation_tokenizer = AutoTokenizer.from_pretrained(moderation_path)
-moderation_model = AutoModelForSequenceClassification.from_pretrained(moderation_path)
+#moderation_path = os.path.join(MODEL_BASE_PATH, "moderation")
+#moderation_tokenizer = AutoTokenizer.from_pretrained(moderation_path)
+#moderation_model = AutoModelForSequenceClassification.from_pretrained(moderation_path)
 
 # Model 2: Sentiment Analysis
 sentiment_path = os.path.join(MODEL_BASE_PATH, "sentiment")
