@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from typing import List
 
 # --- API Keys and Model ID Configuration ---
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 # IDs of the models on the Hugging Face Hub that we will use via API
