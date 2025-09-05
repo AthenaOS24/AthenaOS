@@ -1,5 +1,5 @@
 import os
-import httpx  
+import httpx
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
@@ -8,20 +8,23 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 MODEL_BASE_PATH = "models"
 
-# Model 1: Moderation
-#moderation_path = os.path.join(MODEL_BASE_PATH, "moderation")
-#moderation_tokenizer = AutoTokenizer.from_pretrained(moderation_path)
-#moderation_model = AutoModelForSequenceClassification.from_pretrained(moderation_path)
+sentiment_path = os.path.join(MODEL_BASE_PATH, "sentiment")
+sentiment_analyzer = pipeline(
+    "sentiment-analysis", 
+    model=sentiment_path, 
+    tokenizer=sentiment_path,
+    local_files_only=True   
+)
 
-HF_USERNAME = "DucThuanTran" 
-
-# Model 2: Sentiment Analysis ( 
-sentiment_path = f"{HF_USERNAME}/my-sentiment-model"  
-sentiment_analyzer = pipeline("sentiment-analysis", model=sentiment_path)
-
-# Model 3: Emotion Analysis  
-emotion_path = f"{HF_USERNAME}/my-emotion-model"  
-emotion_analyzer = pipeline("text-classification", model=emotion_path, top_k=None)
+# Model 3: Emotion Analysis (Ép buộc tải từ thư mục cục bộ)
+emotion_path = os.path.join(MODEL_BASE_PATH, "emotion")
+emotion_analyzer = pipeline(
+    "text-classification", 
+    model=emotion_path, 
+    tokenizer=emotion_path, 
+    top_k=None,
+    local_files_only=True   
+)
 
 def sanitize_input(text):
     return text.strip()
