@@ -13,13 +13,16 @@ MODEL_BASE_PATH = "models"
 #moderation_tokenizer = AutoTokenizer.from_pretrained(moderation_path)
 #moderation_model = AutoModelForSequenceClassification.from_pretrained(moderation_path)
 
-# Model 2: Sentiment Analysis
-sentiment_path = os.path.join(MODEL_BASE_PATH, "sentiment")
-sentiment_analyzer = pipeline("sentiment-analysis", model=sentiment_path, tokenizer=sentiment_path)
+HF_USERNAME = "DucThuanTran" 
 
-# Model 3: Emotion Analysis
-emotion_path = os.path.join(MODEL_BASE_PATH, "emotion")
-emotion_analyzer = pipeline("text-classification", model=emotion_path, tokenizer=emotion_path, top_k=None)
+# Model 2: Sentiment Analysis ( 
+sentiment_path = f"{HF_USERNAME}/my-sentiment-model"  
+sentiment_analyzer = pipeline("sentiment-analysis", model=sentiment_path)
+
+# Model 3: Emotion Analysis  
+emotion_path = f"{HF_USERNAME}/my-emotion-model"  
+emotion_analyzer = pipeline("text-classification", model=emotion_path, top_k=None)
+
 def sanitize_input(text):
     return text.strip()
 
