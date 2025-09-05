@@ -16,7 +16,6 @@ sentiment_analyzer = pipeline(
     local_files_only=True   
 )
 
-# Model 3: Emotion Analysis (Ép buộc tải từ thư mục cục bộ)
 emotion_path = os.path.join(MODEL_BASE_PATH, "emotion")
 emotion_analyzer = pipeline(
     "text-classification", 
@@ -67,10 +66,10 @@ async def generate_response_from_openrouter(user_input: str, history: list):
             data = response.json()
             return data['choices'][0]['message']['content']
         except httpx.HTTPStatusError as e:
-            print(f"Lỗi API từ OpenRouter: {e.response.text}")
+            print(f"LAPI error from OpenRouter: {e.response.text}")
             raise HTTPException(status_code=502, detail="Error response from AI service.")
         except Exception as e:
-            print(f"Lỗi không xác định khi gọi API: {e}")
+            print(f"Undefined error when calling API: {e}")
             raise HTTPException(status_code=500, detail="An internal error occurred.")
 
 app = FastAPI(title="Athena AI Therapist API")
