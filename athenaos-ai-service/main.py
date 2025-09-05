@@ -69,24 +69,20 @@ def read_root():
 # ==============================================================================
 @app.post("/chat")
 async def handle_chat(request: ChatRequest):
+    """Main endpoint to handle chat requests."""
     sanitized_input = request.user_input.strip()
     if not sanitized_input:
         raise HTTPException(status_code=400, detail="User input is empty.")
 
-    # Get the response from the AI (LLM) - Lệnh này vẫn giữ lại
+    # Get the response from the AI (LLM)
     ai_response = await generate_response_from_openrouter(sanitized_input, request.history)
 
-    # --- TẠM THỜI VÔ HIỆU HÓA ĐỂ KIỂM TRA ---
     # Perform other analyses using APIs
-    # sentiment_data = await analyze_sentiment_api(sanitized_input)
-    # emotion_data = await analyze_emotion_api(sanitized_input)
-    
-    # Trả về dữ liệu giả
-    dummy_sentiment = [{"label": "TEST", "score": 1.0}]
-    dummy_emotion = [{"label": "TEST", "score": 1.0}]
+    sentiment_data = await analyze_sentiment_api(sanitized_input)
+    emotion_data = await analyze_emotion_api(sanitized_input)
 
     return {
         "response": ai_response,
-        "sentiment_analysis": dummy_sentiment,
-        "emotion_analysis": dummy_emotion,
+        "sentiment_analysis": sentiment_data,
+        "emotion_analysis": emotion_data,
     }
