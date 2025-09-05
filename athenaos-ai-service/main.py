@@ -11,12 +11,14 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 # IDs of the models on the Hugging Face Hub that we will use via API
 SENTIMENT_MODEL_ID = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
 EMOTION_MODEL_ID = "SamLowe/roberta-base-go_emotions"
+EMBEDDING_MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
 
 HF_API_URL = "https://api-inference.huggingface.co/models/"
 
-# --- API Calling Functions ---
+# --- API Calling Functions (Replaces local model loading) ---
 
 async def query_hf_api(model_id: str, payload: dict):
+    """General function to query the Hugging Face Inference API."""
     if not HF_TOKEN:
         raise HTTPException(status_code=500, detail="HF_TOKEN is not set.")
     
@@ -24,19 +26,37 @@ async def query_hf_api(model_id: str, payload: dict):
     api_url = f"{HF_API_URL}{model_id}"
     
     async with httpx.AsyncClient() as client:
-        response = await client.post(api_url, headers=headers, json=payload, timeout=45) # Tăng timeout của client
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = await client.post(api_url, headers=headers, json=payload, timeout=20)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            # API Error from Hugging Face for model...
+            print(f"API Error from Hugging Face for model {model_id}: {e.response.text}")
+            raise HTTPException(status_code=502, detail=f"Error response from Hugging Face API for {model_id}.")
+        except Exception as e:
+            # Unknown error when calling Hugging Face API
+            print(f"Unknown error when calling Hugging Face API: {e}")
+            raise HTTPException(status_code=500, detail="An internal error occurred with Hugging Face API.")
 
 async def analyze_sentiment_api(text: str):
+    """Analyze sentiment (Positive/Negative) using the API."""
     payload = {"inputs": text}
     return await query_hf_api(SENTIMENT_MODEL_ID, payload)
 
 async def analyze_emotion_api(text: str):
+    """Analyze detailed emotions (joy, sadness, anger, etc.) using the API."""
     payload = {"inputs": text}
     return await query_hf_api(EMOTION_MODEL_ID, payload)
 
+async def get_embedding_api(text: str):
+    """Create a text embedding (vector) using the API."""
+    # This specific API requires a list of inputs
+    payload = {"inputs": [text]} 
+    return await query_hf_api(EMBEDDING_MODEL_ID, payload)
+
 async def generate_response_from_openrouter(user_input: str, history: list):
+    """Function to call the OpenRouter API to get a response from the LLM."""
     if not OPENROUTER_API_KEY:
         raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY is not set.")
 
@@ -45,7 +65,14 @@ async def generate_response_from_openrouter(user_input: str, history: list):
     messages.append({"role": "user", "content": user_input})
 
     headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}"}
-    json_data = {"model": "anthropic/claude-3.5-sonnet", "messages": messages}
+    
+    # ==============================================================================
+    # THAY ĐỔI MÔ HÌNH CHÍNH TẠI ĐÂY
+    # ==============================================================================
+    json_data = {
+        "model": "meta-llama/llama-2-7b-chat", # Đã đổi sang Llama 2 7B
+        "messages": messages
+    }
 
     async with httpx.AsyncClient() as client:
         response = await client.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=json_data, timeout=30)
@@ -62,11 +89,9 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 def read_root():
+    """Root endpoint to check if the API is running."""
     return {"status": "Athena AI API is running"}
 
-# ==============================================================================
-# PHIÊN BẢN THỬ NGHIỆM - VÔ HIỆU HÓA HAI LỆNH GỌI API CHẬM
-# ==============================================================================
 @app.post("/chat")
 async def handle_chat(request: ChatRequest):
     """Main endpoint to handle chat requests."""
