@@ -1,4 +1,3 @@
-import React from 'react';
 import { Container, Title, Text, Card, SimpleGrid, Button, Stack } from '@mantine/core';
 import './ServicePage.css';
 
@@ -11,10 +10,11 @@ export function ServicesPage() {
         </Title>
         
 
-        <SimpleGrid cols={3} spacing="xl" breakpoints={[
-          { maxWidth: '980px', cols: 2, spacing: 'md' },
-          { maxWidth: '640px', cols: 1, spacing: 'sm' },
-        ]} mt={50}>
+        <SimpleGrid 
+          cols={{ base: 1, sm: 2, md: 3 }} 
+          spacing="xl" 
+          mt={50}
+        >
           {/* Service Card 1 */}
           <Card className="service-card" shadow="xl" p="xl" radius="md">
             <div className="service-icon">🧠</div>
@@ -58,3 +58,4 @@ export function ServicesPage() {
     </div>
   );
 }
+
