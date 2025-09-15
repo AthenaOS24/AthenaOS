@@ -4,7 +4,7 @@ import axios from 'axios';
 import type { AuthResponse } from '../types';
 
 // The base URL of your backend API
-const API_URL = 'http://localhost:8888/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 // A function to handle user login
 // Fix 2: Add string types to the function parameters
