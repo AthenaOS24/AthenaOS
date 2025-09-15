@@ -1,5 +1,6 @@
 // src/pages/ProfilePage.tsx
-import { useEffect, useMemo } from "react";
+
+import { useEffect, useMemo } from "react"; 
 import {
   Avatar,
   Badge,
@@ -8,7 +9,6 @@ import {
   Divider,
   Grid,
   Group,
-  Paper,
   Progress,
   Stack,
   Table,
@@ -30,6 +30,39 @@ import { useAuthStore } from "../context/authStore";
 import { useChatStore } from "../context/chatStore";
 import "./ProfilePage.css";
 
+interface IUser {
+  name?: string;
+  username?: string;
+  email?: string;
+  description?: string;
+  dob?: string;
+  address?: string;
+  phone?: string;
+  avatarUrl?: string | null;
+}
+
+interface IConversation {
+  id: string | number;
+  updatedAt?: string | number | Date;
+  createdAt?: string | number | Date;
+  title?: string;
+  messages?: unknown[];
+  messageCount?: number;
+}
+
+interface AppAuthStore {
+  isAuthenticated: boolean;
+  token: string | null;
+  getState: () => { user?: IUser };
+}
+
+interface AppChatStore {
+  conversations?: IConversation[];
+  setSelectedConversation: (id: string | number) => void;
+  selectConversation?: (id: string | number) => void;
+  fetchConversations: (token: string) => Promise<void>;
+}
+
 type Maybe<T> = T | null | undefined;
 
 export function ProfilePage() {
@@ -38,8 +71,8 @@ export function ProfilePage() {
   // ------- Auth -------
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const token = useAuthStore((s) => s.token);
-  const storeState: any = (useAuthStore as any)?.getState?.() ?? {};
-  const user: any = storeState.user ?? {};
+  const storeState = (useAuthStore as unknown as AppAuthStore).getState?.() ?? {};
+  const user: IUser = storeState.user ?? {};
 
   const name: string = user?.name || user?.username || "User";
   const email: string = user?.email || "—";
@@ -50,14 +83,15 @@ export function ProfilePage() {
   const avatarUrl: Maybe<string> = user?.avatarUrl;
 
   // ------- Chats -------
-  const chatState = useChatStore() as any;
-  const conversations: any[] = chatState?.conversations ?? [];
-  const setSelectedConversation:
-    | ((id: string | number | null) => void)
-    | undefined = chatState?.setSelectedConversation ?? chatState?.selectConversation;
-  const fetchConversations:
-    | ((t?: string) => Promise<void>)
-    | undefined = chatState?.fetchConversations;
+  const chatState = useChatStore() as unknown as AppChatStore;
+
+  const conversations: IConversation[] = useMemo(
+    () => chatState?.conversations ?? [],
+    [chatState?.conversations]
+  );
+  
+  const setSelectedConversation = chatState?.setSelectedConversation ?? chatState?.selectConversation;
+  const fetchConversations = chatState?.fetchConversations;
 
   useEffect(() => {
     if (
@@ -67,13 +101,12 @@ export function ProfilePage() {
     ) {
       fetchConversations(token).catch(() => {});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, conversations, fetchConversations]);
 
   const allChats = useMemo(() => {
-    const list = Array.isArray(conversations) ? [...conversations] : [];
+    const list: IConversation[] = Array.isArray(conversations) ? [...conversations] : [];
     return list
-      .sort((a: any, b: any) => {
+      .sort((a: IConversation, b: IConversation) => {
         const ta = new Date(a?.updatedAt ?? a?.createdAt ?? 0).getTime();
         const tb = new Date(b?.updatedAt ?? b?.createdAt ?? 0).getTime();
         return tb - ta;
@@ -83,14 +116,14 @@ export function ProfilePage() {
 
   const totalChats = allChats.length;
   const recentChats = allChats.slice(0, 6);
-  const msgCount = allChats.reduce((sum, c: any) => {
+  const msgCount = allChats.reduce((sum, c: IConversation) => {
     if (Array.isArray(c?.messages)) return sum + c.messages.length;
     if (typeof c?.messageCount === "number") return sum + c.messageCount;
     return sum;
   }, 0);
 
   const resume = (id: string | number) => {
-    setSelectedConversation?.(id as any);
+    setSelectedConversation?.(id);
     navigate("/chat");
   };
 
@@ -199,8 +232,8 @@ export function ProfilePage() {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {allChats.map((c: any) => {
-                    const id = c?.id as string | number | undefined;
+                  {allChats.map((c: IConversation) => {
+                    const id = c?.id;
                     const when = new Date(
                       c?.updatedAt ?? c?.createdAt ?? Date.now()
                     ).toLocaleString();

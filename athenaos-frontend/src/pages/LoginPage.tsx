@@ -22,7 +22,6 @@ type TabValue = 'login' | 'register';
 export function LoginPage() {
   const navigate = useNavigate();
 
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const loginAction = useAuthStore((s) => s.login);
 
   const [tab, setTab] = useState<TabValue>('login');
