@@ -4,7 +4,7 @@ import axios from 'axios';
 import type { AuthResponse } from '../types';
 
 // The base URL of your backend API
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+const API_URL = 'https://athenabackend-825605376128.australia-southeast2.run.app/api';
 
 // A function to handle user login
 // Fix 2: Add string types to the function parameters
