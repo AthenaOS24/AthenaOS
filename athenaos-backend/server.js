@@ -10,33 +10,16 @@ dotenv.config();
 
 const app = express();
 
-// SỬA ĐỔI CHÍNH: Cấu hình CORS để chỉ định rõ origin của frontend
-const corsOptions = {
-  origin: 'https://athena-825605376128.australia-southeast2.run.app',
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+// // SỬA ĐỔI CHÍNH: Tạm thời comment đoạn này lại
+// const corsOptions = {
+//   origin: 'https://athena-825605376128.australia-southeast2.run.app',
+//   optionsSuccessStatus: 200,
+// };
+// app.use(cors(corsOptions));
+
+// THAY BẰNG DÒNG NÀY: Cho phép TẤT CẢ các request để kiểm tra
+app.use(cors()); 
 
 app.use(express.json());
-
-app.use('/api/auth', authRoutes);
-app.use('/api/chat', chatRoutes);
-
-app.get('/', (req, res) => {
-    res.send('API is running...');
-});
-
-const PORT = process.env.PORT || 8888;
-
-const startServer = async () => {
-    await connectDB();
-
-    await sequelize.sync();
-    console.log("All models were synchronized successfully.");
-
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
-};
 
 startServer();
