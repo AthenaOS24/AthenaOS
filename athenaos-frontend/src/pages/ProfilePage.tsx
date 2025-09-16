@@ -1,4 +1,5 @@
 // src/pages/ProfilePage.tsx
+// Trigger redeploy
 
 import { useEffect, useMemo } from "react"; 
 import {
