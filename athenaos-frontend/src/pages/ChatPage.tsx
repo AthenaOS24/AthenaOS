@@ -8,16 +8,18 @@ import { IconMessage2, IconPlus } from '@tabler/icons-react';
 import axios from 'axios';
 import { useAuthStore } from '../context/authStore';
 import { useChatStore } from '../context/chatStore';
-import { API_URL } from '../services/apiService'; 
+ 
 
 type ID = string | number;
 
 // ĐÃ XÓA: Dòng const API_BASE cũ
 
 const sendMessage = async (text: string, token: string) => {
-  // ĐÃ SỬA: Dùng API_URL thay vì API_BASE
+  // TEST: Ghi đè URL ngay tại đây
+  const testApiUrl = 'https://athenabackend-825605376128.australia-southeast2.run.app/api/chat/send-message';
+  
   const res = await axios.post(
-    `${API_URL}/chat/send-message`,
+    testApiUrl, // Dùng biến test
     { text },
     { headers: { Authorization: `Bearer ${token}` }, timeout: 20000 }
   );
