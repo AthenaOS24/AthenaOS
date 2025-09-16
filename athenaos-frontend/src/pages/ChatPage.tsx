@@ -5,29 +5,14 @@ import {
   Drawer, NavLink, Divider, Box, Alert,
 } from '@mantine/core';
 import { IconMessage2, IconPlus } from '@tabler/icons-react';
-import axios from 'axios';
 import { useAuthStore } from '../context/authStore';
 import { useChatStore } from '../context/chatStore';
- 
+// SỬA ĐỔI CHÍNH: Import hàm `sendMessage` từ service
+import { sendMessage } from '../services/apiService';
 
 type ID = string | number;
 
-// ĐÃ XÓA: Dòng const API_BASE cũ
-
-const sendMessage = async (text: string, token: string) => {
-  // TEST: Ghi đè URL ngay tại đây
-  const testApiUrl = 'https://athenabackend-825605376128.australia-southeast2.run.app/api/chat/send-message';
-  
-  const res = await axios.post(
-    testApiUrl, // Dùng biến test
-    { text },
-    { headers: { Authorization: `Bearer ${token}` }, timeout: 20000 }
-  );
-  return res.data;
-};
-
-// ... TOÀN BỘ PHẦN CODE CÒN LẠI CỦA COMPONENT GIỮ NGUYÊN ...
-// (Phần code bên dưới không cần thay đổi gì cả, tôi giữ lại để bạn có thể copy toàn bộ file)
+// XÓA BỎ: Hàm sendMessage cục bộ và các biến URL hardcoded đã được loại bỏ
 
 export function ChatPage() {
   const token = useAuthStore((s) => s.token);
@@ -89,6 +74,8 @@ export function ChatPage() {
     setNewMessage('');
     setLoading(true);
     try {
+      // KHÔNG CẦN THAY ĐỔI GÌ Ở ĐÂY:
+      // Hàm `sendMessage` giờ đã được import từ service và sẽ hoạt động đúng
       await sendMessage(text, token);
       await fetchConversations(token);
 
