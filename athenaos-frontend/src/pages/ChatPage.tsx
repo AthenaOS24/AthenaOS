@@ -8,25 +8,27 @@ import { IconMessage2, IconPlus } from '@tabler/icons-react';
 import axios from 'axios';
 import { useAuthStore } from '../context/authStore';
 import { useChatStore } from '../context/chatStore';
+import { API_URL } from '../services/apiService'; 
 
 type ID = string | number;
 
-// Build the base URL once; you can set VITE_API_URL in your .env
-const API_BASE = (import.meta as any)?.env?.VITE_API_URL ?? 'http://localhost:8888';
+// ĐÃ XÓA: Dòng const API_BASE cũ
 
 const sendMessage = async (text: string, token: string) => {
+  // ĐÃ SỬA: Dùng API_URL thay vì API_BASE
   const res = await axios.post(
-    `${API_BASE}/api/chat/send-message`,
+    `${API_URL}/chat/send-message`,
     { text },
     { headers: { Authorization: `Bearer ${token}` }, timeout: 20000 }
   );
-  return res.data; // assume { id?, ... } or similar
+  return res.data;
 };
+
+// ... TOÀN BỘ PHẦN CODE CÒN LẠI CỦA COMPONENT GIỮ NGUYÊN ...
+// (Phần code bên dưới không cần thay đổi gì cả, tôi giữ lại để bạn có thể copy toàn bộ file)
 
 export function ChatPage() {
   const token = useAuthStore((s) => s.token);
-
-  // Chat store (defensive typing)
   const chat = useChatStore() as any;
   const fetchConversations: (t?: string) => Promise<void> =
     chat?.fetchConversations ?? (async () => {});
@@ -38,18 +40,13 @@ export function ChatPage() {
   const createConversation:
     | ((t?: string) => Promise<any> | any)
     | undefined = chat?.createConversation ?? chat?.startNewConversation;
-
-  // UI state
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Bottom sentinel for smooth autoscroll
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const scrollToBottom = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  // Initial load (and when token changes)
   useEffect(() => {
     if (!token) return;
     (async () => {
@@ -61,10 +58,8 @@ export function ChatPage() {
         setError(humanizeAxiosError(e));
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Sort messages safely
   const msgs = useMemo(
     () =>
       selectedConversation?.messages ?? selectedConversation?.Messages
@@ -76,11 +71,9 @@ export function ChatPage() {
     [selectedConversation]
   );
 
-  // Auto scroll when conversation or count changes
   useEffect(() => { scrollToBottom(); }, [selectedConversation]);
   useEffect(() => { scrollToBottom(); }, [msgs.length]);
 
-  // Send message
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
@@ -97,7 +90,6 @@ export function ChatPage() {
       await sendMessage(text, token);
       await fetchConversations(token);
 
-      // Ensure the newest conversation is selected if store doesn't auto-select
       const latest = getNewestConversation(conversations);
       if (latest && selectedConversation?.id !== latest.id) {
         setSelectedConversation?.(latest.id as any);
@@ -107,12 +99,10 @@ export function ChatPage() {
       setError(humanizeAxiosError(e));
     } finally {
       setLoading(false);
-      // Scroll after UI settles
       setTimeout(scrollToBottom, 100);
     }
   };
 
-  // New chat
   const handleNewConversation = async () => {
     if (!token) {
       setError('Not authenticated. Please login again.');
@@ -130,7 +120,6 @@ export function ChatPage() {
 
       await fetchConversations(token);
 
-      // Prefer explicit newId; otherwise pick the newest convo
       const idToSelect = newId ?? getNewestConversation(conversations)?.id ?? null;
       if (idToSelect != null) setSelectedConversation?.(idToSelect as any);
     } catch (e: any) {
@@ -141,7 +130,6 @@ export function ChatPage() {
     }
   };
 
-  // Drawer list
   const convs = useMemo(() => {
     return conversations
       .map((c: any) => {
@@ -163,14 +151,11 @@ export function ChatPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 100px)' }}>
       <Title order={3} mb="xs">AthenaAI Chat</Title>
-
       {!!error && (
         <Alert color="red" mb="sm" title="Chat error">
           {error}
         </Alert>
       )}
-
-      {/* Top controls */}
       <Group mb="sm" justify="space-between">
         <Button
           variant="light"
@@ -183,8 +168,6 @@ export function ChatPage() {
           New Chat
         </Button>
       </Group>
-
-      {/* Messages */}
       <ScrollArea style={{ flex: 1 }}>
         <Stack p="md" gap="lg">
           {selectedConversation ? (
@@ -218,8 +201,6 @@ export function ChatPage() {
           <div ref={bottomRef} />
         </Stack>
       </ScrollArea>
-
-      {/* Composer */}
       <Paper component="form" onSubmit={handleSend} withBorder p="sm" radius="md" mt="md">
         <Group>
           <TextInput
@@ -233,10 +214,6 @@ export function ChatPage() {
           <Button type="submit" loading={loading}>Voice</Button>
         </Group>
       </Paper>
-
-      
-
-      {/* RIGHT drawer — never covers the left site navbar */}
       <Drawer
         opened={drawerOpen}
         onClose={() => setDrawerOpen(false)}
