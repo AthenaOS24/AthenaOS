@@ -89,7 +89,7 @@ export function LoginPage() {
     <div className="login-page">
       <Container size={420} my={40} className="fade-in">
         <Title className="login-title" ta="center">
-          Welcome to AthenaOS 2
+          Welcome to AthenaOS 
         </Title>
 
         {errMsg && (
