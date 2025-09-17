@@ -12,23 +12,10 @@ const app = express();
 
 // --- Middleware ---
 
-const allowedOrigins = [
-  'https://athena-825605376128.australia-southeast2.run.app', // Your deployed frontend
-  'http://localhost:5173'                                   // Your local development
-];
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  }
+  origin: 'https://athena-825605376128.australia-southeast2.run.app',
+  optionsSuccessStatus: 200,
 };
-
 app.use(cors(corsOptions));
 
 app.use(express.json());
@@ -37,7 +24,6 @@ app.use(express.json());
 // --- API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
-
 app.get('/', (req, res) => {
     res.send('API is running successfully!');
 });
@@ -57,7 +43,7 @@ const startServer = async () => {
 
     } catch (error) {
         console.error("FATAL: Failed to start the server due to an error:", error);
-        process.exit(1); 
+        process.exit(1);  
     }
 };
 
