@@ -1,0 +1,30 @@
+# cloudbuild.yaml
+steps:
+# Bước 1: Build Docker container (giữ nguyên)
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '-t'
+  - 'australia-southeast1-docker.pkg.dev/${PROJECT_ID}/athena-repo/athena-ai-service:latest'
+  - './athenaos-ai-service'
+
+# Bước 2: Đẩy container lên Artifact Registry (giữ nguyên)
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'push'
+  - 'australia-southeast1-docker.pkg.dev/${PROJECT_ID}/athena-repo/athena-ai-service:latest'
+
+# Bước 3 (THAY ĐỔI): Deploy container lên Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'gcloud'
+  args:
+  - 'run'
+  - 'deploy'
+  - 'athenaos-ai-service' # Tên dịch vụ của bạn trên Cloud Run
+  - '--image=australia-southeast1-docker.pkg.dev/${PROJECT_ID}/athena-repo/athena-ai-service:latest'
+  - '--region=australia-southeast1'
+  - '--platform=managed'
+  - '--allow-unauthenticated' # Cho phép truy cập công khai
+  # Thêm các biến môi trường cần thiết ở đây
+  # - '--set-env-vars=GOOGLE_API_KEY=your_key_here' 
+  # (Lưu ý: nên dùng Secret Manager cho API key)
