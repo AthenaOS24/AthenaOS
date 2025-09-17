@@ -12,8 +12,14 @@ dotenv.config();
 const app = express();
 
 // --- Middleware ---
-// Cho phép tất cả các nguồn gốc truy cập (sử dụng để test)
-app.use(cors());
+
+// Cấu hình CORS an toàn: Chỉ cho phép yêu cầu từ frontend của bạn
+const corsOptions = {
+  origin: 'https://athena-825605376128.australia-southeast2.run.app',
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
 // Cho phép server đọc định dạng JSON từ body của request
 app.use(express.json());
 
