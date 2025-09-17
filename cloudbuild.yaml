@@ -1,31 +1,38 @@
-# cloudbuild.yaml (Đã sửa cho region australia-southeast2)
 steps:
-# Bước 1: Build Docker container từ thư mục athenaos-ai-service
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-  - 'build'
-  - '-t'
-  - 'australia-southeast2-docker.pkg.dev/${PROJECT_ID}/athena-repo/athena-ai-service:latest'
-  - './athenaos-ai-service'
+  # 1. Build Docker image
+  # Lệnh này build image từ Dockerfile và gắn tag cho nó
+  # $PROJECT_ID và $COMMIT_SHA là các biến tự động được cung cấp bởi Cloud Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'australia-southeast2-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-api:$COMMIT_SHA', '.']
 
-# Bước 2: Đẩy container đã build lên Artifact Registry
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-  - 'push'
-  - 'australia-southeast2-docker.pkg.dev/${PROJECT_ID}/athena-repo/athena-ai-service:latest'
+  # 2. Push Docker image to Artifact Registry
+  # Đẩy image vừa build lên Artifact Registry để lưu trữ
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'australia-southeast2-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-api:$COMMIT_SHA']
 
-# Bước 3: Deploy container lên Cloud Run
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  entrypoint: 'gcloud'
-  args:
-  - 'run'
-  - 'deploy'
-  - 'athenaos-ai-service'
-  - '--image=australia-southeast2-docker.pkg.dev/${PROJECT_ID}/athena-repo/athena-ai-service:latest'
-  - '--region=australia-southeast2' # <-- ĐÃ SỬA
-  - '--platform=managed'
-  - '--allow-unauthenticated'
+  # 3. Deploy to Cloud Run
+  # Triển khai image từ Artifact Registry lên Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'athena-api' # Tên service của bạn trên Cloud Run
+      - '--image=australia-southeast2-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-api:$COMMIT_SHA'
+      - '--region=australia-southeast2' # Chọn region gần người dùng của bạn
+      - '--platform=managed'
+      - '--allow-unauthenticated' # Cho phép truy cập công khai vào API
+      - '--port=8080' # Port mà ứng dụng của bạn lắng nghe (đã khai báo trong Dockerfile)
+      - '--timeout=600s' # Tăng thời gian chờ khởi động vì model cần thời gian để load
+      - '--memory=2Gi' # Cần nhiều RAM để load các model transformers
+      - '--cpu=2'      # Cung cấp thêm CPU
+      - '--set-env-vars=GOOGLE_API_KEY=$$GOOGLE_API_KEY' # Lấy giá trị biến môi trường từ Secret Manager
 
-# Báo cho Cloud Build biết cần đẩy ảnh này sau khi build xong
-images:
-- 'australia-southeast2-docker.pkg.dev/${PROJECT_ID}/athena-repo/athena-ai-service:latest'
+# Tích hợp Secret Manager để lấy API Key một cách an toàn
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/GOOGLE_API_KEY/versions/latest
+    env: 'GOOGLE_API_KEY'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
