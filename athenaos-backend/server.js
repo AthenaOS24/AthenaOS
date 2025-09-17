@@ -12,10 +12,23 @@ const app = express();
 
 // --- Middleware ---
 
+const allowedOrigins = [
+  'https://athena-825605376128.australia-southeast2.run.app', // Your deployed frontend
+  'http://localhost:5173'                                   // Your local development
+];
+
 const corsOptions = {
-  origin: 'https://athena-825605376128.australia-southeast2.run.app',
-  optionsSuccessStatus: 200,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
 };
+
 app.use(cors(corsOptions));
 
 app.use(express.json());
