@@ -5,61 +5,53 @@ import {
   Drawer, NavLink, Divider, Box, Alert,
 } from '@mantine/core';
 import { IconMessage2, IconPlus } from '@tabler/icons-react';
+import axios, { type AxiosError } from 'axios';
 import { useAuthStore } from '../context/authStore';
-import { useChatStore } from '../context/chatStore';
-// SỬA ĐỔI CHÍNH: Import hàm `sendMessage` từ service
+import { useChatStore, type Message } from '../context/chatStore';
 import { sendMessage } from '../services/apiService';
-
-type ID = string | number;
-
-// XÓA BỎ: Hàm sendMessage cục bộ và các biến URL hardcoded đã được loại bỏ
 
 export function ChatPage() {
   const token = useAuthStore((s) => s.token);
-  const chat = useChatStore() as any;
-  const fetchConversations: (t?: string) => Promise<void> =
-    chat?.fetchConversations ?? (async () => {});
-  const selectedConversation: any = chat?.selectedConversation ?? null;
-  const conversations: any[] = Array.isArray(chat?.conversations) ? chat.conversations : [];
-  const setSelectedConversation:
-    | ((id: ID | null) => void)
-    | undefined = chat?.setSelectedConversation ?? chat?.selectConversation;
-  const createConversation:
-    | ((t?: string) => Promise<any> | any)
-    | undefined = chat?.createConversation ?? chat?.startNewConversation;
+
+  const {
+    conversations,
+    selectedConversation,
+    fetchConversations,
+    selectConversation,
+  } = useChatStore();
+
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-  const scrollToBottom = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  
+  const viewport = useRef<HTMLDivElement>(null);
+  const scrollToBottom = () => {
+    viewport.current?.scrollTo({ top: viewport.current.scrollHeight, behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    if (!token) return;
-    (async () => {
-      try {
-        setError(null);
-        await fetchConversations(token);
-      } catch (e: any) {
+    if (token) {
+      setError(null);
+      fetchConversations(token).catch((e) => {
         console.error('Failed to fetch conversations:', e);
         setError(humanizeAxiosError(e));
-      }
-    })();
-  }, [token]);
+      });
+    }
+  }, [token, fetchConversations]);
 
-  const msgs = useMemo(
-    () =>
-      selectedConversation?.messages ?? selectedConversation?.Messages
-        ? [...selectedConversation.Messages].sort(
-            (a: any, b: any) =>
-              new Date(a?.createdAt ?? 0).getTime() - new Date(b?.createdAt ?? 0).getTime()
-          )
-        : [],
-    [selectedConversation]
-  );
+  const msgs = useMemo(() => {
+    if (!selectedConversation?.messages) {
+      return [];
+    }
+    return [...selectedConversation.messages].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }, [selectedConversation]);
 
-  useEffect(() => { scrollToBottom(); }, [selectedConversation]);
-  useEffect(() => { scrollToBottom(); }, [msgs.length]);
+  useEffect(() => {
+    setTimeout(() => scrollToBottom(), 100);
+  }, [msgs.length, selectedConversation]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,94 +66,51 @@ export function ChatPage() {
     setNewMessage('');
     setLoading(true);
     try {
-      // KHÔNG CẦN THAY ĐỔI GÌ Ở ĐÂY:
-      // Hàm `sendMessage` giờ đã được import từ service và sẽ hoạt động đúng
       await sendMessage(text, token);
       await fetchConversations(token);
-
-      const latest = getNewestConversation(conversations);
-      if (latest && selectedConversation?.id !== latest.id) {
-        setSelectedConversation?.(latest.id as any);
-      }
-    } catch (e: any) {
+    } catch (e) {
       console.error('Failed to send message:', e);
       setError(humanizeAxiosError(e));
     } finally {
       setLoading(false);
-      setTimeout(scrollToBottom, 100);
     }
   };
 
-  const handleNewConversation = async () => {
-    if (!token) {
-      setError('Not authenticated. Please login again.');
-      return;
-    }
-    setError(null);
-    try {
-      let result: any = undefined;
-      if (typeof createConversation === 'function') {
-        result = createConversation.length >= 1
-          ? await createConversation(token)
-          : await createConversation();
-      }
-      const newId = result?.id ?? (typeof result === 'string' || typeof result === 'number' ? result : null);
-
-      await fetchConversations(token);
-
-      const idToSelect = newId ?? getNewestConversation(conversations)?.id ?? null;
-      if (idToSelect != null) setSelectedConversation?.(idToSelect as any);
-    } catch (e: any) {
-      console.error('Failed to create conversation:', e);
-      setError(humanizeAxiosError(e));
-    } finally {
-      setDrawerOpen(false);
-    }
-  };
-
-  const convs = useMemo(() => {
-    return conversations
-      .map((c: any) => {
-        const ts = new Date(c?.updatedAt ?? c?.createdAt ?? Date.now());
-        return {
-          id: c?.id,
-          label: c?.title || `Chat on ${ts.toLocaleDateString()}`,
-          updatedAt: ts.getTime(),
-        };
-      })
-      .sort((a, b) => b.updatedAt - a.updatedAt);
-  }, [conversations]);
-
-  const handleSelectConversation = (id: ID | null) => {
-    setSelectedConversation?.(id as any);
+  const handleNewConversation = () => {
+    selectConversation(null); 
     setDrawerOpen(false);
   };
+  
+  const convs = useMemo(() => {
+    return [...conversations]
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .map((c) => ({
+        id: c.id,
+        label: `Chat from ${new Date(c.createdAt).toLocaleDateString()}`,
+      }));
+  }, [conversations]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 100px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
       <Title order={3} mb="xs">AthenaAI Chat</Title>
-      {!!error && (
-        <Alert color="red" mb="sm" title="Chat error">
+      {error && (
+        <Alert color="red" mb="sm" title="Chat error" withCloseButton onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
       <Group mb="sm" justify="space-between">
-        <Button
-          variant="light"
-          leftSection={<IconMessage2 size={16} />}
-          onClick={() => setDrawerOpen(true)}
-        >
+        <Button variant="light" leftSection={<IconMessage2 size={16} />} onClick={() => setDrawerOpen(true)}>
           Conversations
         </Button>
         <Button leftSection={<IconPlus size={16} />} onClick={handleNewConversation}>
           New Chat
         </Button>
       </Group>
-      <ScrollArea style={{ flex: 1 }}>
+      <ScrollArea style={{ flex: 1 }} viewportRef={viewport}>
         <Stack p="md" gap="lg">
           {selectedConversation ? (
             msgs.length > 0 ? (
-              msgs.map((m: any) => (
+              msgs.map((m: Message) => (
                 <Group key={m.id} justify={m.sender === 'user' ? 'flex-end' : 'flex-start'}>
                   {m.sender === 'bot' && <Avatar color="blue" radius="xl">AI</Avatar>}
                   <Paper
@@ -172,22 +121,21 @@ export function ChatPage() {
                       maxWidth: '70%',
                     }}
                   >
-                    <Text>{m.text}</Text>
+                    <Text style={{ whiteSpace: 'pre-wrap' }}>{m.text}</Text>
                   </Paper>
                   {m.sender === 'user' && <Avatar color="cyan" radius="xl">ME</Avatar>}
                 </Group>
               ))
             ) : (
-              <Center style={{ minHeight: 300 }}>
-                <Title order={4}>Start a new conversation by typing a message!</Title>
+              <Center style={{ height: 300 }}>
+                <Title order={4}>Start the conversation by typing a message!</Title>
               </Center>
             )
           ) : (
-            <Center style={{ minHeight: 300 }}>
+            <Center style={{ height: 300 }}>
               <Title order={4}>Open “Conversations” or click “New Chat” to begin</Title>
             </Center>
           )}
-          <div ref={bottomRef} />
         </Stack>
       </ScrollArea>
       <Paper component="form" onSubmit={handleSend} withBorder p="sm" radius="md" mt="md">
@@ -197,10 +145,10 @@ export function ChatPage() {
             placeholder="Type your message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.currentTarget.value)}
-            disabled={loading}
+            disabled={!token || loading}
           />
-          <Button type="submit" loading={loading}>Send</Button>
-          <Button type="submit" loading={loading}>Voice</Button>
+          <Button type="submit" loading={loading} disabled={!token || !newMessage.trim()}>Send</Button>
+          <Button type="submit" loading={loading} disabled={!token}>Voice</Button>
         </Group>
       </Paper>
       <Drawer
@@ -208,9 +156,6 @@ export function ChatPage() {
         onClose={() => setDrawerOpen(false)}
         title="Conversations"
         position="right"
-        size={320}
-        zIndex={1500}
-        overlayProps={{ opacity: 0.15 }}
       >
         <Stack>
           <Button fullWidth leftSection={<IconPlus size={16} />} onClick={handleNewConversation}>
@@ -223,11 +168,14 @@ export function ChatPage() {
             ) : (
               convs.map((c) => (
                 <NavLink
-                  key={String(c.id)}
+                  key={c.id}
                   label={c.label}
                   leftSection={<IconMessage2 size={16} />}
                   active={selectedConversation?.id === c.id}
-                  onClick={() => handleSelectConversation(c.id as any)}
+                  onClick={() => {
+                    selectConversation(c.id);
+                    setDrawerOpen(false);
+                  }}
                   style={{ borderRadius: 8 }}
                 />
               ))
@@ -239,24 +187,17 @@ export function ChatPage() {
   );
 }
 
-function getNewestConversation(conversations: any[]) {
-  if (!Array.isArray(conversations) || conversations.length === 0) return null;
-  const arr = conversations
-    .map((c) => ({ c, t: new Date(c?.updatedAt ?? c?.createdAt ?? 0).getTime() }))
-    .sort((a, b) => b.t - a.t);
-  return arr[0]?.c ?? null;
-}
-
-function humanizeAxiosError(e: any): string {
-  if (e?.response) {
-    const code = e.response.status;
-    const msg = e.response.data?.message || e.response.statusText || 'Request failed';
+function humanizeAxiosError(e: unknown): string {
+  if (axios.isAxiosError(e)) {
+    const error = e as AxiosError<{ message?: string }>;
+    const code = error.response?.status;
+    const msg = error.response?.data?.message || error.response?.statusText || 'Request failed';
     if (code === 401) return 'Not authorized (401). Please login again.';
     if (code === 404) return 'Endpoint not found (404). Check API URL.';
     return `${msg} (HTTP ${code})`;
   }
-  if (e?.request) return 'No response from server. Is the backend running?';
-  return e?.message || 'Unexpected error';
+  if (e instanceof Error) return e.message;
+  return 'An unexpected error occurred';
 }
 
 export default ChatPage;

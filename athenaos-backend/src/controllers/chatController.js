@@ -28,7 +28,6 @@ exports.sendMessage = async (req, res) => {
   }
 
   try {
-    // Dòng log mới để xác nhận hàm đã được gọi
     console.log(`INFO: sendMessage triggered for user ${userId}. Message: "${text}"`);
 
     const [conversation] = await Conversation.findOrCreate({

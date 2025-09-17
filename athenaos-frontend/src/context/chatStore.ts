@@ -1,7 +1,7 @@
 // src/context/chatStore.ts
 import { create } from 'zustand';
 import axios from 'axios';
-import { API_URL } from '../services/apiService'; 
+import { API_URL } from '../services/apiService';
 
 export interface Message {
   id: number;
@@ -25,22 +25,28 @@ interface ChatState {
   selectConversation: (conversationId: number | null) => void;
 }
 
+type RawConversation = Omit<Conversation, 'messages'> & {
+  messages?: Message[];
+  Messages?: Message[];
+};
+
 export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
   selectedConversation: null,
 
   fetchConversations: async (token) => {
     try {
-      // ĐÃ SỬA: Bỏ localhost và dùng API_URL
-      const response = await axios.get(`${API_URL}/chat/history`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axios.get<RawConversation[]>(`${API_URL}/chat/history`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const rawConversations = Array.isArray(response.data) ? response.data : [] as any[];
-      const newConversations: Conversation[] = rawConversations.map((c: any) => ({
+
+      const rawConversations = Array.isArray(response.data) ? response.data : [];
+
+      const newConversations: Conversation[] = rawConversations.map((c) => ({
         ...c,
-        messages: Array.isArray(c.messages) ? c.messages : (Array.isArray(c.Messages) ? c.Messages : []),
-        Messages: Array.isArray(c.Messages) ? c.Messages : (Array.isArray(c.messages) ? c.messages : []),
+        messages: c.messages || c.Messages || [],
       }));
+
       const currentSelectedId = get().selectedConversation?.id;
 
       set({ conversations: newConversations });
