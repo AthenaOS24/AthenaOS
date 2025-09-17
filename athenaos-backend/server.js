@@ -30,7 +30,6 @@ app.get('/', (req, res) => {
 });
 
 
-// --- Hàm khởi động Server ---
 const startServer = async () => {
     try {
         await connectDB();
