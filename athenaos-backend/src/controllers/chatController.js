@@ -49,7 +49,6 @@ exports.sendMessage = async (req, res) => {
 
     await conversation.save();
     
-    // Dòng log mới ngay trước khi gọi AI service
     console.log("INFO: Calling AI service getAthenaAiResponse...");
     
     const aiResult = await getAthenaAiResponse(text, existingMessages);
@@ -65,17 +64,13 @@ exports.sendMessage = async (req, res) => {
     res.status(200).json(aiResult);
 
   } catch (error) {
-    // --- KHỐI CATCH CHI TIẾT ĐỂ TÌM RA LỖI ---
     console.error("--- !!! ERROR in sendMessage controller !!! ---");
     console.error("Error Message:", error.message);
 
-    // Kiểm tra xem lỗi có phải từ axios trả về hay không
     if (error.response) {
-      // AI service đã trả lời nhưng với mã lỗi (ví dụ: 401, 403, 500)
       console.error("Response Data from AI Service:", error.response.data);
       console.error("Response Status from AI Service:", error.response.status);
     } else if (error.request) {
-      // Request đã được gửi đi nhưng không nhận được phản hồi
       console.error("No response received from AI service. Request details:", error.request);
     }
 

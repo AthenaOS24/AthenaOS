@@ -9,6 +9,6 @@ const { getChatHistory, sendMessage } = require('../controllers/chatController')
 router.get('/history', authMiddleware, getChatHistory);
 
 // POST /api/chat/send-message - Send a new message
-router.post('/send-message', authMiddleware, sendMessage); // Changed '/' to '/send-message' for clarity
+router.post('/send-message', authMiddleware, sendMessage);  
 
 module.exports = router;
