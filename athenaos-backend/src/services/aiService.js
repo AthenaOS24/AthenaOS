@@ -1,11 +1,6 @@
 // src/services/aiService.js
 const axios = require('axios');
 
-/**
-* @param {string} userInput
-* @param {Array<object>} dbMessages
-* @returns {Promise<object>}
-*/
 exports.getAthenaAiResponse = async (userInput, dbMessages) => {
   const aiApiUrl = process.env.PYTHON_AI_API_URL;
   if (!aiApiUrl) {
@@ -29,10 +24,12 @@ exports.getAthenaAiResponse = async (userInput, dbMessages) => {
 
   try {
     console.log("Sending request to Python AI service on Railway...");
-    const response = await axios.post(aiApiUrl, payload, {
+    const fullUrl = `${aiApiUrl}/chat`; 
+    const response = await axios.post(fullUrl, payload, {
       timeout: 60000,
       headers: { 'Content-Type': 'application/json' }
     });
+
     console.log("Received response from Python AI service.");
     return response.data;
   } catch (error) {
