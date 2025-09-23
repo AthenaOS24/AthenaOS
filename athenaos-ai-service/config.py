@@ -15,7 +15,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 # ==============================================================================
 # LOCAL MODEL CONFIGURATIONS
 # ==============================================================================
-# These models will run on Railway for analysis and preprocessing
+# These models will run on Cloud server for analysis and preprocessing
 MODERATION_MODEL_ID = "facebook/roberta-hate-speech-dynabench-r4-target"
 SENTIMENT_MODEL_ID = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 EMOTION_MODEL_ID = "bhadresh-savani/distilbert-base-uncased-emotion"
