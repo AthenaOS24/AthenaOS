@@ -36,7 +36,7 @@ app = FastAPI(
     description="Advanced AI therapist with Cognitive Behavioral Therapy integration, powered by Llama-3 via Groq."  
 )
 
-# Simple in-memory conversation tracking (for production, use Redis/PostgreSQL)
+# Simple in-memory conversation tracking  
 conversation_history = {}
 
 @app.on_event("startup")
