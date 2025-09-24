@@ -44,7 +44,7 @@ def get_sentiment_analyzer():
             sentiment_analyzer = pipeline(
                 "sentiment-analysis", 
                 model=SENTIMENT_MODEL_ID,
-                device=-1  # Use CPU
+                device=-1   
             )
             logger.info("Sentiment analyzer loaded successfully")
         except Exception as e:
