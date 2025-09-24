@@ -1,0 +1,16 @@
+# requirements.txt
+
+# Web framework
+fastapi
+uvicorn
+
++# Library to make HTTP requests
++requests
+
+# Local ML Models from Hugging Face
+transformers
+torch
+sentencepiece
+
+# Configuration
+python-dotenv
