@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import logging
-from groq import Groq, APIError  
+from groq import Groq, APIError, APIConnectionError  
 
 # Import components from other files
 from config import GROQ_API_KEY, GENERATIVE_MODEL_ID, MENTAL_HEALTH_RESOURCES, ANTI_REPETITION_STARTERS  
@@ -256,9 +256,13 @@ Your role is to create a safe, empathetic space where the user feels heard and e
             word_count=word_count
         )
 
-    except APIError as e:  
-        logger.error(f"Groq API Error: {e.status_code} - {e.response}")
-        raise HTTPException(status_code=500, detail=f"Failed to get a response from Groq API. Details: {e.body}")
+    except APIConnectionError as e:
+        logger.error(f"Groq API Connection Error: Could not connect to the API. {e.__cause__}")
+        raise HTTPException(status_code=503, detail="Service Unavailable: Could not connect to the generative AI service.")
+    
+    except APIError as e:
+        logger.error(f"Groq API Status Error: {e.status_code} - {e.response}")
+        raise HTTPException(status_code=500, detail=f"Failed to get a response from Groq API. Status: {e.status_code}")
 
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
