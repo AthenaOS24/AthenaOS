@@ -1,21 +1,24 @@
 # config.py
+
 import os
 from dotenv import load_dotenv
 
-# Load all environment variables
+# Load all environment variables from a .env file
 load_dotenv()
 
 # ==============================================================================
-# API KEYS
+# API KEYS & MODEL CONFIGURATIONS
 # ==============================================================================
-# Get the API token for Hugging Face from the environment variables
-HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
+# Get the API key for Hugging Face from the environment variables
+HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
+# Define the ID for the generative model on Hugging Face Hub
+GENERATIVE_MODEL_ID = "meta-llama/Llama-2-7b-chat-hf"
 
 # ==============================================================================
-# LOCAL MODEL CONFIGURATIONS
+# LOCAL ANALYSIS MODEL CONFIGURATIONS
 # ==============================================================================
-# These models will run on your server for analysis and preprocessing
+# These models run locally for analysis and preprocessing tasks
 MODERATION_MODEL_ID = "facebook/roberta-hate-speech-dynabench-r4-target"
 SENTIMENT_MODEL_ID = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 EMOTION_MODEL_ID = "bhadresh-savani/distilbert-base-uncased-emotion"
@@ -116,10 +119,12 @@ MENTAL_HEALTH_RESOURCES = {
     'concern': [
         "**SAMHSA National Helpline (US)**: 1-800-662-HELP (4357) (24/7)",
         "**7 Cups (free online therapy)**: https://www.7cups.com",
+        "**BetterHelp Online Therapy**: https://www.betterhelp.com"
     ],
     'general': [
         "**Anxiety and Depression Association of America**: https://adaa.org",
         "**Psychology Today Therapist Finder**: https://www.psychologytoday.com",
+        "**CBT Worksheets (Free)**: https://www.psychologytools.com/self-help/"
     ]
 }
 
