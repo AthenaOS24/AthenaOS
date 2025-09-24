@@ -12,7 +12,7 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Define the ID for the generative model on Groq.
-GENERATIVE_MODEL_ID = "llama3-8b-8192"
+GENERATIVE_MODEL_ID = "llama-3.1-8b-instant"
 
 # ==============================================================================
 # LOCAL ANALYSIS MODEL CONFIGURATIONS  
