@@ -47,7 +47,7 @@ async def handle_chat(request: ChatRequest):
     if not gemini_model:
         raise HTTPException(status_code=500, detail="Gemini client not initialized.")
 
-    # === STEP 1: PRE-PROCESSING & LOCAL ANALYSIS  ===
+    # === STEP 1: PRE-PROCESSING & LOCAL ANALYSIS (on Google Cloud) ===
     sanitized_input = sanitize_input(request.user_input)
 
     if moderate_text(sanitized_input)['is_harmful']:
