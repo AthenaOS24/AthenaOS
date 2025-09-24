@@ -3,20 +3,19 @@
 import os
 from dotenv import load_dotenv
 
-# Load all environment variables from a .env file
 load_dotenv()
 
 # ==============================================================================
 # API KEYS & MODEL CONFIGURATIONS
 # ==============================================================================
-# Get the API key for Hugging Face from the environment variables
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+# Get the API key for Groq from the environment variables
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# Define the ID for the generative model on Hugging Face Hub
-GENERATIVE_MODEL_ID = "meta-llama/Llama-2-7b-chat-hf"
+# Define the ID for the generative model on Groq.
+GENERATIVE_MODEL_ID = "llama3-8b-8192"
 
 # ==============================================================================
-# LOCAL ANALYSIS MODEL CONFIGURATIONS
+# LOCAL ANALYSIS MODEL CONFIGURATIONS  
 # ==============================================================================
 # These models run locally for analysis and preprocessing tasks
 MODERATION_MODEL_ID = "facebook/roberta-hate-speech-dynabench-r4-target"

@@ -8,11 +8,10 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import logging
-import requests
-import json
+from groq import Groq, APIError  
 
 # Import components from other files
-from config import HUGGINGFACE_API_KEY, GENERATIVE_MODEL_ID, MENTAL_HEALTH_RESOURCES, ANTI_REPETITION_STARTERS
+from config import GROQ_API_KEY, GENERATIVE_MODEL_ID, MENTAL_HEALTH_RESOURCES, ANTI_REPETITION_STARTERS  
 from models import load_local_models
 from processing import (
     sanitize_input, moderate_text, combined_sentiment_analysis, 
@@ -24,19 +23,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- Configuration and Startup ---
-# Configure Hugging Face Inference API details
-HF_API_URL = f"https://api-inference.huggingface.co/models/{GENERATIVE_MODEL_ID}"
-HF_HEADERS = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
-
-if not HUGGINGFACE_API_KEY:
-    logger.error("HUGGINGFACE_API_KEY not found in environment variables.")
+if not GROQ_API_KEY:
+    logger.error("GROQ_API_KEY not found in environment variables.")
+    client = None
 else:
-    logger.info(f"Hugging Face client configured for model: {GENERATIVE_MODEL_ID}")
+    client = Groq(api_key=GROQ_API_KEY)
+    logger.info(f"Groq client configured for model: {GENERATIVE_MODEL_ID}")
 
 app = FastAPI(
-    title="Athena AI Therapist API (CBT Enhanced Hybrid Architecture with Llama-2)",
-    version="6.0.0",
-    description="Advanced AI therapist with Cognitive Behavioral Therapy integration, powered by Llama-2."
+    title="Athena AI Therapist API (CBT Enhanced Hybrid Architecture with Groq/Llama3)",  
+    version="7.0.0",
+    description="Advanced AI therapist with Cognitive Behavioral Therapy integration, powered by Llama-3 via Groq."  
 )
 
 # Simple in-memory conversation tracking (for production, use Redis/PostgreSQL)
@@ -52,7 +49,7 @@ def startup_event():
         logger.error(f"Startup error: {e}")
         raise
 
-# --- Enhanced Pydantic Models (no changes needed) ---
+# --- Enhanced Pydantic Models (unchanged) ---
 class HistoryItem(BaseModel):
     role: str = Field(..., description="Role: 'user' or 'assistant'")
     content: str = Field(..., description="Message content")
@@ -94,16 +91,16 @@ class ChatResponse(BaseModel):
 async def read_root():
     """Health check endpoint"""
     return {
-        "status": "Athena AI API (CBT Enhanced with Llama-2) is running",
-        "version": "6.0.0",
-        "features": ["CBT Pattern Detection", "Enhanced Crisis Detection", "Dynamic Interventions", "Llama-2 Powered"]
+        "status": "Athena AI API (CBT Enhanced with Groq/Llama-3) is running", 
+        "version": "7.0.0",
+        "features": ["CBT Pattern Detection", "Enhanced Crisis Detection", "Dynamic Interventions", "Groq/Llama-3 Powered"]  
     }
 
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def handle_chat(request: ChatRequest):
     """Enhanced chat endpoint with comprehensive CBT analysis"""
-    if not HUGGINGFACE_API_KEY:
-        raise HTTPException(status_code=500, detail="Hugging Face API key is not configured.")
+    if not client:  
+        raise HTTPException(status_code=500, detail="Groq API key is not configured.")
 
     # Generate or validate session ID
     session_id = request.session_id or str(uuid.uuid4())
@@ -119,7 +116,6 @@ async def handle_chat(request: ChatRequest):
     # === STEP 1: ENHANCED PRE-PROCESSING & ANALYSIS ===
     sanitized_input = sanitize_input(request.user_input)
     
-    # Content moderation
     moderation_result = moderate_text(sanitized_input)
     if moderation_result['is_harmful']:
         logger.warning(f"Harmful content detected (score: {moderation_result['score']:.3f})")
@@ -128,10 +124,8 @@ async def handle_chat(request: ChatRequest):
             detail="Input contains harmful content. Please focus on positive and constructive topics."
         )
 
-    # Comprehensive CBT-enhanced analysis
     analysis_result_dict = combined_sentiment_analysis(sanitized_input, conversation_history[session_id])
     
-    # Early crisis intervention
     if analysis_result_dict['urgency_level'] == 'crisis':
         crisis_resources = MENTAL_HEALTH_RESOURCES['crisis'][:2]
         analysis_for_response = analysis_result_dict.copy()
@@ -183,7 +177,7 @@ async def handle_chat(request: ChatRequest):
     system_prompt = f"""
 You are Athena, a compassionate AI therapist specializing in Cognitive Behavioral Therapy (CBT).
 
-🎯 CRITICAL RESPONSE GUIDELINES:
+CRITICAL RESPONSE GUIDELINES:
 {anti_repetition_instruction}
 - Vary your opening phrases; avoid these: {', '.join(ANTI_REPETITION_STARTERS[:4])}.
 - Keep responses concise (100-150 words).
@@ -191,7 +185,7 @@ You are Athena, a compassionate AI therapist specializing in Cognitive Behaviora
 - Use warm, professional language without clinical jargon.
 - End with an open-ended question.
 
-📊 CURRENT USER STATE:
+CURRENT USER STATE:
 - Sentiment: {analysis_result_dict['sentiment']} (confidence: {analysis_result_dict['sentiment_score']:.2f})
 - Primary Emotion: {primary_emotion}
 - Detected CBT Patterns: {', '.join(detected_patterns) if detected_patterns else 'None'}
@@ -199,7 +193,7 @@ You are Athena, a compassionate AI therapist specializing in Cognitive Behaviora
 
 {cbt_instruction}
 
-💡 CBT INTEGRATION:
+CBT INTEGRATION:
 - If distortions are detected, gently challenge with curiosity, not confrontation.
 - Frame interventions as collaborative experiments.
 - Always tie techniques to the user's specific situation.
@@ -208,43 +202,32 @@ You are Athena, a compassionate AI therapist specializing in Cognitive Behaviora
 Your role is to create a safe, empathetic space where the user feels heard and empowered.
 """
 
-    # === STEP 3: BUILD LLAMA-2 COMPATIBLE CONVERSATION CONTEXT ===
-    # Llama-2 Chat Template: <s>[INST] <<SYS>> {system} <</SYS>> {user_prompt} [/INST] {response} </s>
+    ## === STEP 3: BUILD GROQ-COMPATIBLE MESSAGE LIST ===
     
-    chat_history_for_prompt = ""
-    for message in conversation_history[session_id][-6:]:  # Use last 6 messages for context
-        if message['role'] == 'user':
-            chat_history_for_prompt += f"<s>[INST] {message['content']} [/INST]"
-        elif message['role'] == 'assistant':
-            chat_history_for_prompt += f" {message['content']} </s>"
-            
-    # Construct the final prompt with system instructions, history, and the new user input
-    final_prompt = f"<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n{chat_history_for_prompt}<s>[INST] {sanitized_input} [/INST]"
+    messages_for_groq = [{"role": "system", "content": system_prompt}]
+    
+    # Add conversation history (last 6 messages)
+    for message in conversation_history[session_id][-6:]:
+        messages_for_groq.append({"role": message['role'], "content": message['content']})
+        
+    # Add the new user message
+    messages_for_groq.append({"role": "user", "content": sanitized_input})
 
-    # === STEP 4: GENERATE ENHANCED RESPONSE VIA HUGGING FACE API ===
+    ## === STEP 4: GENERATE ENHANCED RESPONSE VIA GROQ API ===
     try:
-        logger.info(f"Generating Llama-2 response for: {sanitized_input[:50]}...")
+        logger.info(f"Generating Llama-3 response via Groq for: {sanitized_input[:50]}...")
         
-        payload = {
-            "inputs": final_prompt,
-            "parameters": {
-                "max_new_tokens": 256,  # Control response length
-                "do_sample": True,
-                "temperature": 0.7,
-                "top_p": 0.9,
-                "repetition_penalty": 1.15,
-                "return_full_text": False # Ask API to only return the generated part
-            }
-        }
+        chat_completion = client.chat.completions.create(
+            messages=messages_for_groq,
+            model=GENERATIVE_MODEL_ID,
+            temperature=0.7,
+            max_tokens=256,  
+            top_p=0.9,
+        )
         
-        response = requests.post(HF_API_URL, headers=HF_HEADERS, json=payload)
-        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-        
-        result = response.json()
-        ai_response = result[0]['generated_text'].strip()
+        ai_response = chat_completion.choices[0].message.content.strip()
 
         # === STEP 5: ENHANCE RESPONSE WITH CBT ELEMENTS ===
-        # (This logic remains the same)
         final_response = ai_response
         word_count = len(final_response.split())
 
@@ -273,12 +256,9 @@ Your role is to create a safe, empathetic space where the user feels heard and e
             word_count=word_count
         )
 
-    except requests.exceptions.HTTPError as e:
-        error_text = e.response.text
-        logger.error(f"HTTP Error from Hugging Face API: {e.response.status_code} - {error_text}")
-        if "is currently loading" in error_text:
-            raise HTTPException(status_code=503, detail="The model is currently loading. Please try again in a few moments.")
-        raise HTTPException(status_code=500, detail=f"Failed to get a response from the inference API. Details: {error_text}")
+    except APIError as e:  
+        logger.error(f"Groq API Error: {e.status_code} - {e.response}")
+        raise HTTPException(status_code=500, detail=f"Failed to get a response from Groq API. Details: {e.body}")
 
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
@@ -301,14 +281,13 @@ Your role is to create a safe, empathetic space where the user feels heard and e
             word_count=len(fallback_response.split())
         )
 
-# Other endpoints like /stats, /session, /health remain largely the same.
-# Minor update to /health check
+# Update health check
 @app.get("/health", tags=["Status"])
 async def health_check():
     """Detailed health check"""
     return {
         "status": "healthy",
-        "generative_model_configured": bool(HUGGINGFACE_API_KEY and GENERATIVE_MODEL_ID),
+        "generative_model_configured": bool(client and GENERATIVE_MODEL_ID),  
         "active_sessions": len(conversation_history),
         "timestamp": datetime.now().isoformat()
     }

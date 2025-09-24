@@ -8,8 +8,10 @@ uvicorn
 transformers
 torch
 sentencepiece
-huggingface-hub
 requests 
 
 # Configuration
 python-dotenv
+
+# Groq API Client  
+groq
