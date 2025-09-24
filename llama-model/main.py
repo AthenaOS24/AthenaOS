@@ -215,6 +215,9 @@ Your role is to create a safe, empathetic space where the user feels heard and e
 
     ## === STEP 4: GENERATE ENHANCED RESPONSE VIA GROQ API ===
     try:
+        # DÒNG LOG ĐÃ ĐƯỢC THÊM VÀO ĐÂY
+        logger.info(f"Payload being sent to Groq: {messages_for_groq}")
+        
         logger.info(f"Generating Llama-3 response via Groq for: {sanitized_input[:50]}...")
         
         chat_completion = client.chat.completions.create(
