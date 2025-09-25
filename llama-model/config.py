@@ -1,27 +1,29 @@
 # config.py
+
 import os
 from dotenv import load_dotenv
 
-# Load all environment variables
 load_dotenv()
 
 # ==============================================================================
-# API KEYS
+# API KEYS & MODEL CONFIGURATIONS
 # ==============================================================================
-# Get the API key for Google Gemini from the environment variables
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+# Get the API key for Groq from the environment variables
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+# Define the ID for the generative model on Groq.
+GENERATIVE_MODEL_ID = "llama-3.1-8b-instant"
 
 # ==============================================================================
-# LOCAL MODEL CONFIGURATIONS
+# LOCAL ANALYSIS MODEL CONFIGURATIONS  
 # ==============================================================================
-# These models will run on Cloud for analysis and preprocessing
+# These models run locally for analysis and preprocessing tasks
 MODERATION_MODEL_ID = "facebook/roberta-hate-speech-dynabench-r4-target"
 SENTIMENT_MODEL_ID = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 EMOTION_MODEL_ID = "bhadresh-savani/distilbert-base-uncased-emotion"
 
 # ==============================================================================
-# ENHANCED CRISIS & CONCERN PATTERNS (FROM V2 - EXPANDED)
+# ENHANCED CRISIS & CONCERN PATTERNS
 # ==============================================================================
 CRISIS_PATTERNS = [
     r"\bi (want to|wanna|'m going to|gonna|will|plan to|need to|am going to) (die|kill myself|k.m.s|end it all|end my life)\b",
@@ -53,7 +55,7 @@ CONCERN_PATTERNS = [
 ]
 
 # ==============================================================================
-# CBT COGNITIVE DISTORTION PATTERNS (NEW FROM V2)
+# CBT COGNITIVE DISTORTION PATTERNS
 # ==============================================================================
 CBT_PATTERNS = {
     'catastrophizing': r"\b(everything is|always|never|worst|ruined|hopeless|disaster|catastrophe)\b",
@@ -63,7 +65,7 @@ CBT_PATTERNS = {
 }
 
 # ==============================================================================
-# CBT INTERVENTION MAPPING (NEW FROM V2)
+# CBT INTERVENTION MAPPING
 # ==============================================================================
 CBT_INTERVENTIONS = {
     'catastrophizing': [
@@ -104,7 +106,7 @@ GENERAL_CBT_TECHNIQUES = [
 ]
 
 # ==============================================================================
-# ENHANCED MENTAL HEALTH RESOURCES (EXPANDED FROM V2)
+# ENHANCED MENTAL HEALTH RESOURCES
 # ==============================================================================
 MENTAL_HEALTH_RESOURCES = {
     'crisis': [
@@ -116,21 +118,17 @@ MENTAL_HEALTH_RESOURCES = {
     'concern': [
         "**SAMHSA National Helpline (US)**: 1-800-662-HELP (4357) (24/7)",
         "**7 Cups (free online therapy)**: https://www.7cups.com",
-        "**BetterHelp Online Therapy**: https://www.betterhelp.com",
-        "**TalkSpace Online Therapy**: https://www.talkspace.com",
-        "**MoodGYM (Online CBT Program)**: https://moodgym.com.au"
+        "**BetterHelp Online Therapy**: https://www.betterhelp.com"
     ],
     'general': [
         "**Anxiety and Depression Association of America**: https://adaa.org",
         "**Psychology Today Therapist Finder**: https://www.psychologytoday.com",
-        "**CBT Worksheets (Free)**: https://www.psychologytools.com/self-help/",
-        "**Get Self Help (CBT Resources)**: https://www.getselfhelp.co.uk",
-        "**Mind (UK mental health charity)**: https://www.mind.org.uk"
+        "**CBT Worksheets (Free)**: https://www.psychologytools.com/self-help/"
     ]
 }
 
 # ==============================================================================
-# ANTI-REPETITION PHRASES (NEW FROM V2)
+# ANTI-REPETITION PHRASES
 # ==============================================================================
 ANTI_REPETITION_STARTERS = [
     "Of course I'm here to help",

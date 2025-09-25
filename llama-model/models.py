@@ -44,7 +44,7 @@ def get_sentiment_analyzer():
             sentiment_analyzer = pipeline(
                 "sentiment-analysis", 
                 model=SENTIMENT_MODEL_ID,
-                device=0 if hasattr(pipeline, 'device') else -1  # Use GPU if available
+                device=-1   
             )
             logger.info("Sentiment analyzer loaded successfully")
         except Exception as e:
@@ -62,7 +62,7 @@ def get_emotion_analyzer():
                 "text-classification", 
                 model=EMOTION_MODEL_ID, 
                 top_k=None,
-                device=0 if hasattr(pipeline, 'device') else -1  # Use GPU if available
+                device=-1 # Use CPU
             )
             logger.info("Emotion analyzer loaded successfully")
         except Exception as e:
