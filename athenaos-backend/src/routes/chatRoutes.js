@@ -5,7 +5,7 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const { getChatHistory, sendMessage } = require('../controllers/chatController');
 
-// GET /api/chat/history - Get all messages for a user's conversation
+// GET /api/chat/history - Get all messages for a conversation
 router.get('/history', authMiddleware, getChatHistory);
 
 // POST /api/chat/send-message - Send a new message
