@@ -18,9 +18,9 @@ GENERATIVE_MODEL_ID = "llama-3.1-8b-instant"
 # LOCAL ANALYSIS MODEL CONFIGURATIONS  
 # ==============================================================================
 # These models run locally for analysis and preprocessing tasks
-MODERATION_MODEL_ID = "facebook/roberta-hate-speech-dynabench-r4-target"
-SENTIMENT_MODEL_ID = "cardiffnlp/twitter-roberta-base-sentiment-latest"
-EMOTION_MODEL_ID = "bhadresh-savani/distilbert-base-uncased-emotion"
+MODERATION_MODEL_ID = "./local_models/moderation"
+SENTIMENT_MODEL_ID = "./local_models/sentiment"
+EMOTION_MODEL_ID = "./local_models/emotion"
 
 # ==============================================================================
 # ENHANCED CRISIS & CONCERN PATTERNS
