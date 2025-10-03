@@ -5,7 +5,7 @@ const cors = require('cors');
 const { connectDB, sequelize } = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
-const ttsRoutes = require('./routes/ttsRoutes.js');
+const ttsRoutes = require('./src/routes/ttsRoutes'); 
 
 dotenv.config();
 
@@ -13,14 +13,25 @@ const app = express();
 
 // --- Middleware ---
 
+const allowedOrigins = [
+  'https://athena-825605376128.australia-southeast2.run.app',
+  'http://localhost:5173',
+  'http://localhost:5174'
+];
+
 const corsOptions = {
-  origin: 'https://athena-825605376128.australia-southeast2.run.app',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   optionsSuccessStatus: 200,
 };
+
 app.use(cors(corsOptions));
-
 app.use(express.json());
-
 
 // --- API Routes ---
 app.use('/api/auth', authRoutes);
@@ -30,7 +41,6 @@ app.use('/api/tts', ttsRoutes);
 app.get('/', (req, res) => {
     res.send('API is running successfully!');
 });
-
 
 const startServer = async () => {
     try {
