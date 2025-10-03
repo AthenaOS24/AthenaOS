@@ -23,6 +23,7 @@ import {
   IconPhoneCall,
   IconChevronRight,
   IconClock,
+  IconMicrophone,
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import "./ServicePage.css";
@@ -37,9 +38,9 @@ export function ServicesPage() {
     },
     {
       icon: <IconMessage2 size={22} />,
-      title: "24/7 Chat Support",
+      title: "24/7 Chat & Voice",
       desc:
-        "Reach out whenever you need. Get grounding tips, coping tools, and gentle check-ins.",
+        "Reach out by text or voice whenever you need. Get grounding tips, coping tools, and gentle check-ins.",
     },
     {
       icon: <IconChartBar size={22} />,
@@ -69,8 +70,8 @@ export function ServicesPage() {
 
   const steps = [
     {
-      title: "Start a chat",
-      desc: "Say how you’re feeling or pick a quick topic (stress, sleep, study, relationships).",
+      title: "Start a conversation",
+      desc: "Say or type how you’re feeling, or pick a quick topic (stress, sleep, study, relationships).",
     },
     {
       title: "Get tools that fit",
@@ -85,7 +86,6 @@ export function ServicesPage() {
   return (
     <div className="services-page">
       <Container size="lg" py={32}>
-        {/* Hero */}
         <Paper radius="md" p="xl" className="services-hero" withBorder>
           <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
             <Stack gap={6} className="hero-copy">
@@ -94,7 +94,7 @@ export function ServicesPage() {
               </Title>
               <Text c="dimmed" className="services-subtitle">
                 Athena helps you manage stress, understand emotions, and build healthy habits —
-                privately and on your schedule.
+                privately, on your schedule, through text or voice.
               </Text>
               <Group gap="xs" mt={6}>
                 <Badge variant="light" size="sm">24/7</Badge>
@@ -107,19 +107,29 @@ export function ServicesPage() {
               </Group>
             </Stack>
 
-            <Button
-              size="md"
-              className="services-cta-button"
-              rightSection={<IconChevronRight size={16} />}
-              component={Link}
-              to="/chat"
-            >
-              Start a chat
-            </Button>
+            <Group>
+                <Button
+                    size="md"
+                    className="services-cta-button"
+                    rightSection={<IconChevronRight size={16} />}
+                    component={Link}
+                    to="/chat"
+                >
+                    Start a chat
+                </Button>
+                <Button
+                    size="md"
+                    variant="default"
+                    rightSection={<IconMicrophone size={16} />}
+                    component={Link}
+                    to="/voice"
+                >
+                    Try Voice
+                </Button>
+            </Group>
           </Group>
         </Paper>
 
-        {/* Features — switched to Grid (no breakpoints prop) */}
         <Grid gutter="lg" mt={24}>
           {features.map((f, i) => (
             <Grid.Col key={i} span={{ base: 12, sm: 6, md: 4 }}>
@@ -136,7 +146,6 @@ export function ServicesPage() {
           ))}
         </Grid>
 
-        {/* Why Athena + How it works */}
         <Grid mt={32} gutter="lg" align="stretch">
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Card withBorder radius="md" p="lg" className="why-card">
@@ -192,7 +201,6 @@ export function ServicesPage() {
           </Grid.Col>
         </Grid>
 
-        {/* FAQ */}
         <Card withBorder radius="md" p="lg" mt={32} className="faq-card">
           <Title order={3}>Frequently asked questions</Title>
           <Divider my="sm" />
@@ -223,23 +231,33 @@ export function ServicesPage() {
           </Accordion>
         </Card>
 
-        {/* Final CTA */}
         <Stack align="center" mt={36}>
           <Title order={2} className="services-cta-title">
             Ready to start your journey?
           </Title>
           <Text className="services-cta-desc">
-            Open a private chat and take the first small step today.
+            Open a private chat or voice session and take the first small step today.
           </Text>
-          <Button
-            className="services-cta-button"
-            size="lg"
-            component={Link}
-            to="/chat"
-            rightSection={<IconChevronRight size={18} />}
-          >
-            Get started
-          </Button>
+          <Group>
+            <Button
+                className="services-cta-button"
+                size="lg"
+                component={Link}
+                to="/chat"
+                rightSection={<IconChevronRight size={18} />}
+            >
+                Start with Text
+            </Button>
+            <Button
+                size="lg"
+                variant="default"
+                component={Link}
+                to="/voice"
+                rightSection={<IconMicrophone size={18} />}
+            >
+                Start with Voice
+            </Button>
+          </Group>
         </Stack>
       </Container>
     </div>

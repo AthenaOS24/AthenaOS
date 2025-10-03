@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "./Blog.css";
 
+import blog1Image from "../images/blog1.jpg";
+import blog2Image from "../images/blog2.jpg";
+import blog3Image from "../images/blog3.jpg";
+import blog4Image from "../images/blog4.jpg";
+import blog5Image from "../images/blog5.jpg";
+import blog6Image from "../images/blog6.jpg";
+import blog7Image from "../images/blog7.jpg";
+import blog8Image from "../images/blog8.jpg";
+import blog9Image from "../images/blog9.jpg";  
+
 interface BlogPost {
   title: string;
   date: string;
   excerpt: string;
   details: string;
-  image: string; // hyperlink image
+  image: string;
   category?: string;
   authorName?: string;
   authorAvatar?: string;
@@ -21,7 +31,7 @@ const blogPosts: BlogPost[] = [
       "Modalities, qualifications, and the first-session checklist to find a good fit.",
     details:
       "We cover licensing, evidence-based approaches, cost/insurance, cultural fit, and how to evaluate your comfort level after session one.",
-    image: "https://source.unsplash.com/1600x900/?therapist,counseling,office",
+    image: blog1Image,
     category: "Therapy",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=therapist",
@@ -34,7 +44,7 @@ const blogPosts: BlogPost[] = [
       "A practical intro to cognitive restructuring with simple worksheets.",
     details:
       "Learn the ABC model, common thinking traps, and how to replace them with balanced alternatives using a 5-step practice.",
-    image: "https://source.unsplash.com/1600x900/?psychology,cbt,brain",
+    image: blog2Image,
     category: "CBT",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=cbt",
@@ -46,7 +56,7 @@ const blogPosts: BlogPost[] = [
     excerpt: "Short practices you can slot between classes or meetings.",
     details:
       "Box breathing, 5-senses grounding, and micro-meditations. When to prefer movement-based mindfulness over seated practice.",
-    image: "https://source.unsplash.com/1600x900/?mindfulness,calm,breathing",
+    image: blog3Image,
     category: "Mindfulness",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=mindful",
@@ -58,7 +68,7 @@ const blogPosts: BlogPost[] = [
     excerpt: "Tech, privacy, and environment tips for a smoother tele-session.",
     details:
       "Camera framing, headphones, lighting, a privacy checklist, and a pre-session reflection sheet you can reuse.",
-    image: "https://source.unsplash.com/1600x900/?telehealth,video-call,therapy",
+    image: blog4Image,
     category: "Telehealth",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=tele",
@@ -71,7 +81,7 @@ const blogPosts: BlogPost[] = [
       "Why sleep architecture matters and 7 cues to improve it without apps.",
     details:
       "Circadian rhythm anchors, caffeine timing, light exposure, and progressive wind-down routines with templates.",
-    image: "https://source.unsplash.com/1600x900/?sleep,wellness,night",
+    image: blog5Image,
     category: "Wellbeing",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=sleep",
@@ -84,7 +94,7 @@ const blogPosts: BlogPost[] = [
       "Evidence-informed prompts that link feelings, thoughts, and actions.",
     details:
       "Daily 3-line template, weekly review, and how to visualize patterns for therapy or self-coaching.",
-    image: "https://source.unsplash.com/1600x900/?journal,mental-health,notebook",
+    image: blog6Image,
     category: "Journaling",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=journal",
@@ -96,7 +106,7 @@ const blogPosts: BlogPost[] = [
     excerpt: "Overlap, distinctions, and when to seek professional help.",
     details:
       "We compare symptom clusters, duration, functional impact, and the role of rest vs. treatment plans.",
-    image: "https://source.unsplash.com/1600x900/?burnout,work,mental-health",
+    image: blog7Image,
     category: "Psychoeducation",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=burnout",
@@ -108,33 +118,20 @@ const blogPosts: BlogPost[] = [
     excerpt: "Contacts, warning signs, coping steps, and environment safety.",
     details:
       "Download a one-page template, identify triggers, list grounding skills, and arrange safe spaces ahead of time.",
-    image: "https://source.unsplash.com/1600x900/?support,helpline,mental-health",
+    image: blog8Image,
     category: "Safety",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=safety",
     comments: 3,
   },
   {
-    title: "How to Support a Friend in Distress",
-    date: "July 10, 2025",
-    excerpt:
-      "Active listening, validating, and boundaries that protect both of you.",
-    details:
-      "Use the OARS framework, safety questions you can ask, and a list of professional resources by region.",
-    image: "https://source.unsplash.com/1600x900/?support-group,listen,empathy",
-    category: "Community",
-    authorName: "Athena Team",
-    authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=support",
-    comments: 9,
-  },
-  {
-    title: "AI in Therapy: How AthenaOS Assists Clinicians",
+    title: "AI in Therapy: How AthenaAI Assists Clinicians",
     date: "July 03, 2025",
     excerpt:
       "Augmenting—not replacing—care with triage, journaling, and progress views.",
     details:
       "We outline guardrails, privacy, bias checks, and how AthenaOS surfaces insights clinicians can verify.",
-    image: "https://source.unsplash.com/1600x900/?ai,healthcare,psychology",
+    image: blog9Image,
     category: "AI & Ethics",
     authorName: "Athena Team",
     authorAvatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=ai",

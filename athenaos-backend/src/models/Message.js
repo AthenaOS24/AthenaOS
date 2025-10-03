@@ -12,7 +12,10 @@ const Message = sequelize.define('Message', {
         type: DataTypes.TEXT,
         allowNull: false,
     },
- 
+    emotionData: {
+        type: DataTypes.JSON,
+        allowNull: true,
+    }
 }, {
     timestamps: true,  
 });

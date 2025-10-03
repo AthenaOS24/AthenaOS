@@ -1,21 +1,17 @@
-// src/pages/HomePage.tsx
-
-import { Link } from 'react-router-dom';
-import { Box, Center, Overlay, Text, ThemeIcon, Title, Container, SimpleGrid, Image, Divider, Group, Blockquote, ActionIcon, Button, Card } from '@mantine/core';
+import { Link, useNavigate } from 'react-router-dom';
+import { Box, Center, Overlay, Text, ThemeIcon, Title, Container, SimpleGrid, Image, Divider, Group, Blockquote, ActionIcon, Button, Card, Modal, Stack } from '@mantine/core';
 import { useState } from 'react';
 import { FaFeatherAlt, FaQuoteLeft } from 'react-icons/fa';
 import { IoIosArrowRoundForward, IoIosArrowRoundBack } from "react-icons/io";
 import { TbClockHour4, TbMessageChatbot, TbShieldCheck } from "react-icons/tb";
+import { useAuthStore } from '../context/authStore';
 
-// === Local images ===
 import heroImg from '../images/Hero.jpeg';
 import aiBlogImg from '../images/AI.jpeg';
 import wellbeingImg from '../images/WellBeing.jpeg';
 import logoImg from '../images/logo.jpg';
 import welcomeImg from '../images/WelcomePic.jpeg';
 
-
-// === COMPONENT 1: HeroSection ===
 const HeroSection = () => (
   <Box
     mx={"calc(var(--app-shell-padding) * -1)"}
@@ -44,7 +40,6 @@ const HeroSection = () => (
   </Box>
 );
 
-// === COMPONENT 2: WelcomeSection ===
 const WelcomeSection = () => (
   <Container
     size="lg"
@@ -58,40 +53,38 @@ const WelcomeSection = () => (
     }}
   >
     <SimpleGrid cols={{ base: 1, md: 2 }} spacing={50}>
-  <Image
-    radius="sm"
-    src={welcomeImg}
-    alt="Welcome illustration"
-  />
-  <Center>
-    <Box ta={{ base: 'center', md: 'left' }}>
-      <Title order={2} style={{ fontFamily: "'Playfair Display', serif" }} fw={500}>
-        A New Era of Support
-      </Title>
-      <Text size="xl" mt="sm" mb="md" style={{ fontFamily: "'Playfair Display', serif" }}>
-        Accessible, Anytime, Anywhere.
-      </Text>
-      <Text c="dimmed">
-        Embarking on a journey towards mental wellness is a significant step. AthenaOS harnesses the power of Generative AI to provide you with a personalized and confidential space to explore your thoughts. Our system is designed to complement traditional therapy, offering real-time, evidence-based support whenever you need it.
-      </Text>
-      <Text
-        component={Link}
-        to="/services"
-        c="dark"
-        fw={500}
-        mt="lg"
-        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-      >
-        Discover Our Services <IoIosArrowRoundForward size={24} />
-      </Text>
-    </Box>
-  </Center>
-</SimpleGrid>
-
+      <Image
+        radius="sm"
+        src={welcomeImg}
+        alt="Welcome illustration"
+      />
+      <Center>
+        <Box ta={{ base: 'center', md: 'left' }}>
+          <Title order={2} style={{ fontFamily: "'Playfair Display', serif" }} fw={500}>
+            A New Era of Support
+          </Title>
+          <Text size="xl" mt="sm" mb="md" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Accessible, Anytime, Anywhere.
+          </Text>
+          <Text c="dimmed">
+            Embarking on a journey towards mental wellness is a significant step. AthenaAI harnesses the power of Generative AI to provide you with a personalized and confidential space to explore your thoughts. Our system is designed to complement traditional therapy, offering real-time, evidence-based support whenever you need it.
+          </Text>
+          <Text
+            component={Link}
+            to="/services"
+            c="dark"
+            fw={500}
+            mt="lg"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+          >
+            Discover Our Services <IoIosArrowRoundForward size={24} />
+          </Text>
+        </Box>
+      </Center>
+    </SimpleGrid>
   </Container>
 );
 
-// === COMPONENT 3: HowCanWeHelpSection ===
 const HowCanWeHelpSection = () => {
   const features = [
     {
@@ -132,12 +125,11 @@ const HowCanWeHelpSection = () => {
   );
 };
 
-// === COMPONENT 4: TestimonialsSection ===
 const TestimonialsSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const testimonials = [
-    "For the first time, I felt like I had a space to talk without judgment, any time of day. AthenaOS was there for me during late-night anxiety peaks. It's truly revolutionary.",
+    "For the first time, I felt like I had a space to talk without judgment, any time of day. AthenaAI was there for me during late-night anxiety peaks. It's truly revolutionary.",
     "The AI's ability to remember and connect my thoughts from previous sessions is incredible. It feels deeply personal, like it genuinely understands my journey. It helped me see patterns I never noticed before.",
     "As someone hesitant about therapy, this was the perfect first step. The CBT-based approach gave me practical tools and exercises that I could apply immediately to my daily life. It's empowering.",
     "I was worried about privacy, but knowing everything is encrypted gave me the confidence to be completely open. This level of security is something I value immensely.",
@@ -186,8 +178,7 @@ const TestimonialsSection = () => {
   );
 };
 
-// === COMPONENT 5: MeetAthenaSection ===
-const MeetAthenaSection = () => (
+const MeetAthenaSection = ({ onLinkClick }: { onLinkClick: (to: string) => void }) => (
     <Container size="lg" py={{ base: 'xl', md: 80 }}>
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing={50} verticalSpacing={50}>
             <Center>
@@ -200,18 +191,17 @@ const MeetAthenaSection = () => (
                         I am built upon the proven principles of Cognitive Behavioral Therapy (CBT) and trained on a diverse range of therapeutic dialogues. While I am not a replacement for a human therapist, I am designed to be a powerful, evidence-based tool to help you build resilience, understand your own mind, and develop practical coping strategies.
                     </Text>
                     <Text
-                        component={Link}
-                        to="/about-us"
+                        component="button"
+                        onClick={() => onLinkClick('/chat')}
                         c="dark"
                         fw={500}
                         mt="lg"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                     >
                         Learn more about the technology <IoIosArrowRoundForward size={24} />
                     </Text>
                 </Box>
             </Center>
-
             <Box pos="relative">
                 <Image
                     radius="sm"
@@ -238,44 +228,32 @@ const MeetAthenaSection = () => (
     </Container>
 );
 
-// === COMPONENT 6: CallToActionSection ===
 const CallToActionSection = () => (
     <Box bg="gray.1" py={{ base: 'xl', md: 80 }}>
       <Container>
         <Center>
             <Button
                 component={Link}
-                to="/about-us"
+                to="/team"
                 variant="filled"
                 color="dark"
                 size="lg"
                 radius="xs"
                 tt="uppercase"
             >
-                Learn more about the AthenaOS Team
+                Learn more about the AthenaAI Team
             </Button>
         </Center>
       </Container>
     </Box>
 );
 
-// === COMPONENT 7: BlogSection ===
 const BlogSection = () => {
     const blogPosts = [
-        {
-            title: 'Techniques for Managing Daily Anxiety',
-            image: wellbeingImg
-        },
-        {
-            title: 'How AI Can Support Your Therapy Journey',
-            image: aiBlogImg
-        },
-        {
-            title: 'The Importance of Self-Compassion',
-            image: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2940&auto=format=fit=crop'
-        }
+        { title: 'Techniques for Managing Daily Anxiety', image: wellbeingImg },
+        { title: 'How AI Can Support Your Therapy Journey', image: aiBlogImg },
+        { title: 'The Importance of Self-Compassion', image: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2940&auto=format=fit=crop' }
     ];
-
     return (
         <Box bg="white" py={{ base: 'xl', md: 80 }}>
             <Container size="lg">
@@ -285,16 +263,11 @@ const BlogSection = () => {
                         <Text mt="sm" style={{ fontFamily: "'Playfair Display', serif" }}>Educational Advice & Tips</Text>
                     </Box>
                 </Center>
-
                 <SimpleGrid cols={{ base: 1, md: 3 }} spacing="xl">
                     {blogPosts.map(post => (
                         <Card key={post.title} shadow="sm" p="lg" radius="md" withBorder component="a" href="#">
                             <Card.Section>
-                                <Image
-                                    src={post.image}
-                                    height={160}
-                                    alt={post.title}
-                                />
+                                <Image src={post.image} height={160} alt={post.title} />
                             </Card.Section>
                             <Text fw={500} ta="center" mt="md">{post.title}</Text>
                         </Card>
@@ -305,15 +278,50 @@ const BlogSection = () => {
     );
 };
 
-// === MAIN HOMEPAGE FUNCTION ===
 export function HomePage() {
+  const [modalOpened, setModalOpened] = useState(false);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const navigate = useNavigate();
+
+  const handleProtectedLinkClick = (to: string) => {
+    if (isAuthenticated) {
+      navigate(to);
+    } else {
+      setModalOpened(true);
+    }
+  };
+
   return (
     <>
+      <Modal
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+        title="Authentication Required"
+        centered
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 3,
+        }}
+      >
+        <Stack align="center" gap="md">
+            <Text ta="center">You need to be logged in to access this feature.</Text>
+            <Title order={4}>Already have an account?</Title>
+            <Button fullWidth component={Link} to="/login" onClick={() => setModalOpened(false)}>
+                Sign In
+            </Button>
+            <Divider label="OR" labelPosition="center" my="xs" style={{ width: '100%' }} />
+            <Text ta="center">Don't have an account yet?</Text>
+            <Button fullWidth variant="default" component={Link} to="/login" onClick={() => setModalOpened(false)}>
+                Sign Up
+            </Button>
+        </Stack>
+      </Modal>
+
       <HeroSection />
       <WelcomeSection />
       <HowCanWeHelpSection />
       <TestimonialsSection />
-      <MeetAthenaSection />
+      <MeetAthenaSection onLinkClick={handleProtectedLinkClick} />
       <CallToActionSection />
       <BlogSection />
     </>

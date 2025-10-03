@@ -1,268 +1,478 @@
 // src/pages/ProfilePage.tsx
-// Trigger redeploy
-
-import { useEffect, useMemo } from "react"; 
+import { useEffect, useMemo, useState } from "react";
 import {
+  Anchor,
   Avatar,
   Badge,
+  Box,
   Button,
   Card,
   Divider,
+  FileButton,
   Grid,
   Group,
+  Paper,
   Progress,
   Stack,
   Table,
   Text,
+  TextInput,
   Title,
-  ThemeIcon,
 } from "@mantine/core";
-import { Link, useNavigate } from "react-router-dom";
 import {
-  IconUser,
-  IconCalendar,
+  IconAt,
+  IconCalendarEvent,
+  IconCamera,
+  IconCheck,
+  IconCirclePlus,
   IconMapPin,
+  IconMessageDots,
   IconPhone,
-  IconMail,
-  IconChevronRight,
-  IconMessage2,
+  IconUser,
 } from "@tabler/icons-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../context/authStore";
 import { useChatStore } from "../context/chatStore";
 import "./ProfilePage.css";
 
-interface IUser {
-  name?: string;
+// Type definitions for type safety
+type Message = {
+  content: string;
+};
+
+type Conversation = {
+  id: string;
+  title?: string;
+  preview?: string;
+  updatedAt: string | number;
+  createdAt: string | number;
+  messages: Message[];
+};
+
+type UserLike = {
+  id?: string | number;
   username?: string;
+  name?: string;
   email?: string;
-  description?: string;
-  dob?: string;
+  avatarUrl?: string;
   address?: string;
   phone?: string;
-  avatarUrl?: string | null;
-}
+  dob?: string;
+};
 
-interface IConversation {
-  id: string | number;
-  updatedAt?: string | number | Date;
-  createdAt?: string | number | Date;
-  title?: string;
-  messages?: unknown[];
-  messageCount?: number;
-}
+type ChecklistItem = {
+  id: string;
+  text: string;
+  done: boolean;
+  createdAt: number;
+};
 
-interface AppAuthStore {
-  isAuthenticated: boolean;
-  token: string | null;
-  getState: () => { user?: IUser };
-}
+const makeKey = (userId: string | number | undefined, what: "checklist" | "avatar") =>
+  `athena_profile_${userId ?? "anon"}_${what}`;
 
-interface AppChatStore {
-  conversations?: IConversation[];
-  setSelectedConversation: (id: string | number) => void;
-  selectConversation?: (id: string | number) => void;
-  fetchConversations: (token: string) => Promise<void>;
+// Helper function from the updated file, needed for the UI
+function timeAgo(ts: number) {
+  const sec = Math.max(1, Math.floor((Date.now() - ts) / 1000));
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const d = Math.floor(hr / 24);
+  if (d < 30) return `${d}d ago`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return `${mo}mo ago`;
+  const y = Math.floor(mo / 12);
+  return `${y}y ago`;
 }
-
-type Maybe<T> = T | null | undefined;
 
 export function ProfilePage() {
   const navigate = useNavigate();
 
-  // ------- Auth -------
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const token = useAuthStore((s) => s.token);
-  const storeState = (useAuthStore as unknown as AppAuthStore).getState?.() ?? {};
-  const user: IUser = storeState.user ?? {};
+  // Use `any` with eslint-disable for robust interaction with untyped stores
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated as boolean);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const token = useAuthStore((s: any) => s.token as string | undefined);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user = useAuthStore((s: any) => s.user as UserLike | undefined);
+  const displayName = user?.name || user?.username || "User";
 
-  const name: string = user?.name || user?.username || "User";
-  const email: string = user?.email || "—";
-  const description: string = user?.description || "No description provided yet.";
-  const dob: string = user?.dob || "—";
-  const address: string = user?.address || "—";
-  const phone: string = user?.phone || "—";
-  const avatarUrl: Maybe<string> = user?.avatarUrl;
-
-  // ------- Chats -------
-  const chatState = useChatStore() as unknown as AppChatStore;
-
-  const conversations: IConversation[] = useMemo(
-    () => chatState?.conversations ?? [],
-    [chatState?.conversations]
-  );
-  
-  const setSelectedConversation = chatState?.setSelectedConversation ?? chatState?.selectConversation;
-  const fetchConversations = chatState?.fetchConversations;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const conversations = useChatStore((s: any) => s.conversations as Conversation[]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fetchConversations = useChatStore((s: any) => s.fetchConversations);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const selectConversation = useChatStore((s: any) => s.selectConversation);
 
   useEffect(() => {
-    if (
-      token &&
-      typeof fetchConversations === "function" &&
-      (!Array.isArray(conversations) || conversations.length === 0)
-    ) {
-      fetchConversations(token).catch(() => {});
+    if (token && (!conversations || conversations.length === 0)) {
+      fetchConversations(token);
     }
   }, [token, conversations, fetchConversations]);
 
-  const allChats = useMemo(() => {
-    const list: IConversation[] = Array.isArray(conversations) ? [...conversations] : [];
-    return list
-      .sort((a: IConversation, b: IConversation) => {
-        const ta = new Date(a?.updatedAt ?? a?.createdAt ?? 0).getTime();
-        const tb = new Date(b?.updatedAt ?? b?.createdAt ?? 0).getTime();
-        return tb - ta;
-      })
-      .slice(0, 20);
+  // Data processing with variable names matching the new UI
+  const totalConversations = Array.isArray(conversations) ? conversations.length : 0;
+  const totalMessages = useMemo(() => {
+    if (!Array.isArray(conversations)) return 0;
+    return conversations.reduce(
+      (sum: number, c: Conversation) => sum + (c.messages?.length ?? 0),
+      0
+    );
   }, [conversations]);
 
-  const totalChats = allChats.length;
-  const recentChats = allChats.slice(0, 6);
-  const msgCount = allChats.reduce((sum, c: IConversation) => {
-    if (Array.isArray(c?.messages)) return sum + c.messages.length;
-    if (typeof c?.messageCount === "number") return sum + c.messageCount;
-    return sum;
-  }, 0);
+  const recentActive = Math.min(totalConversations, 1);
+  const recent = useMemo(() => {
+    const arr = Array.isArray(conversations) ? [...conversations] : [];
+    return arr
+      .sort(
+        (a: Conversation, b: Conversation) =>
+          new Date(b.updatedAt || b.createdAt).getTime() -
+          new Date(a.updatedAt || a.createdAt).getTime()
+      )
+      .slice(0, 6);
+  }, [conversations]);
 
-  const resume = (id: string | number) => {
-    setSelectedConversation?.(id);
-    navigate("/chat");
+  // Avatar Logic
+  const avatarKey = makeKey(user?.id, "avatar");
+  const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(avatarKey);
+      if (saved) setAvatarDataUrl(saved);
+    } catch (error) {
+      console.warn("Failed to read avatar from localStorage:", error);
+    }
+  }, [user?.id, avatarKey]);
+
+  const handleAvatarFile = async (file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setAvatarDataUrl(dataUrl);
+      try {
+        localStorage.setItem(avatarKey, dataUrl);
+      } catch (error) {
+        console.warn("Failed to save avatar to localStorage:", error);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
+  const resetAvatar = () => {
+    setAvatarDataUrl(null);
+    try {
+      localStorage.removeItem(avatarKey);
+    } catch (error) {
+      console.warn("Failed to remove avatar from localStorage:", error);
+    }
+  };
+
+  // Checklist Logic
+  const checklistKey = makeKey(user?.id, "checklist");
+  const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [newText, setNewText] = useState("");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(checklistKey);
+      setItems(saved ? JSON.parse(saved) : []);
+    } catch (error) {
+      console.warn("Failed to read checklist from localStorage:", error);
+      setItems([]);
+    }
+  }, [user?.id, checklistKey]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(checklistKey, JSON.stringify(items));
+    } catch (error) {
+      console.warn("Failed to save checklist to localStorage:", error);
+    }
+  }, [items, checklistKey]);
+
+  const completed = items.filter((i) => i.done).length;
+  const pct = items.length === 0 ? 0 : Math.round((completed / items.length) * 100);
+
+  const addItem = () => {
+    const text = newText.trim();
+    if (!text) return;
+    const id = window.crypto?.randomUUID?.() ?? String(Date.now() + Math.random());
+    setItems((prev) => [{ id, text, done: false, createdAt: Date.now() }, ...prev]);
+    setNewText("");
+  };
+
+  const toggleItem = (id: string) =>
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, done: !it.done } : it)));
+
+  const removeItem = (id: string) =>
+    setItems((prev) => prev.filter((it) => it.id !== id));
+
+  // RENDER LOGIC
   if (!isAuthenticated) {
     return (
-      <Stack className="page-root">
+      <Stack align="center" gap="md" className="profile-container">
         <Title order={2}>Profile</Title>
-        <Text>You’re not logged in.</Text>
-        <Button component={Link} to="/login">Go to Login</Button>
+        <Text c="dimmed">You’re not logged in.</Text>
+        <Button component={Link} to="/login">Login</Button>
       </Stack>
     );
   }
 
+  // ===== FINAL JSX from the updated (correct layout) file =====
   return (
-    <div className="page-root">
-      {/* Breadcrumb header (matches Dashboard style) */}
-      <Group justify="space-between" align="center" className="dash-header">
-        <Group gap="xs" className="dash-breadcrumb">
-          <Title order={3} className="crumb-muted">Dashboard</Title>
-          <IconChevronRight size={16} />
-          <Title order={3}>Profile</Title>
+    <Box className="profile-container">
+      {/* Header row: breadcrumb-ish + Edit profile */}
+      <Group justify="space-between" align="center" mb="md">
+        <Group gap="xs">
+          <Text fw={600} c="dimmed">Dashboard</Text>
+          <Text c="dimmed">›</Text>
+          <Title order={2}>Profile</Title>
         </Group>
-        <Button variant="light" size="sm" className="btn-outline">Edit profile</Button>
+        <Button variant="default" onClick={() => navigate("/profile?edit=1")}>
+          Edit profile
+        </Button>
       </Group>
 
-      {/* KPI tiles — same visual language as DashboardPage */}
-      <Grid gutter="md" mt="xs">
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card withBorder radius="md" className="kpi-card">
+      {/* Top stat tiles */}
+      <Grid className="stats-grid" gutter="md">
+        <Grid.Col span={{ base: 12, sm: 4 }}>
+          <Card withBorder radius="md" className="stat-card">
             <Text size="sm" fw={600}>Total conversations</Text>
-            <Group align="baseline" gap="6" mt="xs">
-              <Text className="kpi-value">{totalChats}</Text>
+            <Group justify="space-between" mt={8}>
+              <Text size="xl" fw={700}>{totalConversations}</Text>
             </Group>
-            <Progress value={Math.min(totalChats * 5, 100)} color="blue" radius="xl" size="sm" mt="sm" />
+            <Progress value={Math.min(100, totalConversations * 10)} mt="sm" />
           </Card>
         </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card withBorder radius="md" className="kpi-card">
+
+        <Grid.Col span={{ base: 12, sm: 4 }}>
+          <Card withBorder radius="md" className="stat-card">
             <Text size="sm" fw={600}>Messages (sum)</Text>
-            <Group align="baseline" gap="6" mt="xs">
-              <Text className="kpi-value">{msgCount}</Text>
+            <Group justify="space-between" mt={8}>
+              <Text size="xl" fw={700}>{totalMessages}</Text>
             </Group>
-            <Progress value={Math.min((msgCount / 50) * 100, 100)} color="teal" radius="xl" size="sm" mt="sm" />
+            <Progress color="green" value={Math.min(100, totalMessages * 5)} mt="sm" />
           </Card>
         </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card withBorder radius="md" className="kpi-card">
+
+        <Grid.Col span={{ base: 12, sm: 4 }}>
+          <Card withBorder radius="md" className="stat-card">
             <Text size="sm" fw={600}>Recent active</Text>
-            <Group align="baseline" gap="6" mt="xs">
-              <Text className="kpi-value">{recentChats.length}</Text>
+            <Group justify="space-between" mt={8}>
+              <Text size="xl" fw={700}>{recentActive}</Text>
             </Group>
-            <Progress value={Math.min((recentChats.length / 10) * 100, 100)} color="grape" radius="xl" size="sm" mt="sm" />
+            <Progress color="violet" value={recentActive > 0 ? 40 : 0} mt="sm" />
           </Card>
         </Grid.Col>
       </Grid>
 
-      {/* Main content: left profile details, right chat history (cards match Dashboard) */}
-      <Grid gutter="md" mt="md">
-        {/* Left: profile details card */}
-        <Grid.Col span={{ base: 12, md: 5, lg: 4 }}>
-          <Card withBorder radius="md" p="lg" className="profile-card">
-            <Group align="flex-start" wrap="nowrap">
-              <Avatar src={avatarUrl || undefined} radius="xl" size={96}>
-                {avatarUrl ? null : <IconUser size={48} />}
-              </Avatar>
+      <Grid mt="md" gutter="md">
+        {/* LEFT COLUMN — Profile panel + Checklist */}
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          {/* Profile card */}
+          <Card withBorder radius="md" className="profile-card">
+            <Group align="flex-start" justify="space-between" wrap="nowrap">
+              <Group align="center">
+                <Avatar src={avatarDataUrl ?? user?.avatarUrl ?? undefined} size={80} radius="xl">
+                  <IconUser />
+                </Avatar>
+                <Box>
+                  <Group gap="sm">
+                    <Text fw={700} size="lg">{displayName}</Text>
+                    <Badge color="teal" variant="light">Authenticated</Badge>
+                  </Group>
+                  <Text size="sm" c="dimmed">No description provided yet.</Text>
+                </Box>
+              </Group>
 
-              <Stack gap={6} style={{ flex: 1 }}>
-                <Group gap="xs" align="center">
-                  <Text fw={700} fz="lg">{name}</Text>
-                  {token ? <Badge color="teal" variant="light">Authenticated</Badge> : null}
-                </Group>
-                <Text c="dimmed" fz="sm">{description}</Text>
-              </Stack>
+              <Group gap="xs">
+                <FileButton onChange={handleAvatarFile} accept="image/png,image/jpeg,image/webp">
+                  {(props) => (
+                    <Button variant="light" leftSection={<IconCamera size={16} />} {...props}>
+                      Change
+                    </Button>
+                  )}
+                </FileButton>
+                <Button variant="subtle" color="red" onClick={resetAvatar}>
+                  Reset
+                </Button>
+              </Group>
             </Group>
 
             <Divider my="md" />
 
-            <Stack gap="xs" className="details-list">
-              <Detail icon={<IconMapPin size={18} />} label="Address" value={address} />
-              <Detail icon={<IconMail size={18} />} label="Email" value={email} />
-              <Detail icon={<IconPhone size={18} />} label="Phone" value={phone} />
-              <Detail icon={<IconCalendar size={18} />} label="DOB" value={dob} />
+            <Stack gap="sm">
+              <Group gap="xs">
+                <IconMapPin size={18} />
+                <Text fw={600}>Address</Text>
+              </Group>
+              <Text c="dimmed">{user?.address || "—"}</Text>
+
+              <Divider variant="dashed" />
+
+              <Group gap="xs">
+                <IconAt size={18} />
+                <Text fw={600}>Email</Text>
+              </Group>
+              <Text c="dimmed">{user?.email ?? "—"}</Text>
+
+              <Divider variant="dashed" />
+
+              <Group gap="xs">
+                <IconPhone size={18} />
+                <Text fw={600}>Phone</Text>
+              </Group>
+              <Text c="dimmed">{user?.phone ?? "—"}</Text>
+
+              <Divider variant="dashed" />
+
+              <Group gap="xs">
+                <IconCalendarEvent size={18} />
+                <Text fw={600}>DOB</Text>
+              </Group>
+              <Text c="dimmed">{user?.dob ?? "—"}</Text>
             </Stack>
+
+            <Text size="sm" c="dimmed" mt="lg">
+              Profile data is synced to your account
+            </Text>
+          </Card>
+
+          {/* Checklist card */}
+          <Card withBorder radius="md" className="profile-card" mt="md">
+            <Group justify="space-between" align="center">
+              <Text fw={700}>To-do checklist</Text>
+              <Group gap="sm" align="center" wrap="nowrap" style={{ minWidth: 220 }}>
+                <Text size="sm" c="dimmed">
+                  {completed}/{items.length} complete
+                </Text>
+                <Progress value={pct} w={120} />
+              </Group>
+            </Group>
+
+            <Group mt="md" wrap="nowrap" align="flex-end">
+              <TextInput
+                label="Add an item"
+                placeholder="e.g., Verify email, try TTS, complete onboarding"
+                value={newText}
+                onChange={(e) => setNewText(e.currentTarget.value)}
+                className="flex-1"
+              />
+              <Button onClick={addItem} leftSection={<IconCirclePlus size={16} />}>
+                Add
+              </Button>
+            </Group>
+
+            <Divider my="md" />
+
+            {items.length === 0 ? (
+              <Text c="dimmed">No tasks yet — add your first one above.</Text>
+            ) : (
+              <Stack gap="xs">
+                {items.map((it) => (
+                  <Paper
+                    key={it.id}
+                    withBorder
+                    radius="md"
+                    p="xs"
+                    className={`checklist-row ${it.done ? "is-done" : ""}`}
+                  >
+                    <Group justify="space-between" wrap="nowrap">
+                      <Group wrap="nowrap" gap="sm" align="center">
+                        <Button
+                          size="xs"
+                          variant={it.done ? "light" : "default"}
+                          onClick={() => toggleItem(it.id)}
+                          leftSection={it.done ? <IconCheck size={14} /> : undefined}
+                        >
+                          {it.done ? "Done" : "Mark done"}
+                        </Button>
+                        <Text
+                          className="checklist-text"
+                          td={it.done ? "line-through" : undefined}
+                          c={it.done ? "dimmed" : undefined}
+                        >
+                          {it.text}
+                        </Text>
+                      </Group>
+                      <Button
+                        size="xs"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => removeItem(it.id)}
+                      >
+                        Delete
+                      </Button>
+                    </Group>
+                  </Paper>
+                ))}
+              </Stack>
+            )}
           </Card>
         </Grid.Col>
 
-        {/* Right: chat history table */}
-        <Grid.Col span={{ base: 12, md: 7, lg: 8 }}>
-          <Card withBorder radius="md" p="lg" className="profile-card">
-            <Group justify="space-between" mb="xs">
-              <Title order={3}>Chat history</Title>
-              {totalChats > 6 ? <Text c="dimmed" size="sm">{totalChats} total</Text> : null}
+        {/* RIGHT COLUMN — Chat history */}
+        <Grid.Col span={{ base: 12, md: 8 }}>
+          <Card withBorder radius="md" className="profile-card">
+            <Group justify="space-between" align="center" mb="sm">
+              <Group gap="xs" align="center">
+                <IconMessageDots size={20} />
+                <Title order={3}>Chat history</Title>
+              </Group>
+              <Anchor onClick={() => navigate("/chat")}>Go to chat</Anchor>
             </Group>
+
             <Divider mb="sm" />
 
-            {allChats.length === 0 ? (
+            {(!recent || recent.length === 0) ? (
               <Text c="dimmed">No conversations yet.</Text>
             ) : (
-              <Table striped highlightOnHover withTableBorder className="chat-table">
+              <Table striped highlightOnHover withRowBorders={false} verticalSpacing="sm">
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Title</Table.Th>
                     <Table.Th>Last activity</Table.Th>
                     <Table.Th>Messages</Table.Th>
-                    <Table.Th className="th-right">Action</Table.Th>
+                    <Table.Th>Action</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {allChats.map((c: IConversation) => {
-                    const id = c?.id;
-                    const when = new Date(
-                      c?.updatedAt ?? c?.createdAt ?? Date.now()
-                    ).toLocaleString();
-                    const title = c?.title || `Conversation #${String(id ?? "—")}`;
-                    const count = Array.isArray(c?.messages)
-                      ? c.messages.length
-                      : c?.messageCount ?? "—";
+                  {recent.map((conv: Conversation) => {
+                    const label =
+                      conv?.title ||
+                      conv?.preview ||
+                      (conv?.messages?.[0]?.content?.slice(0, 48) ?? "Conversation");
+                    const when = new Date(conv?.updatedAt || conv?.createdAt || Date.now());
+                    const ago = timeAgo(when.getTime());
+                    const msgCount = conv?.messages?.length ?? 0;
+
                     return (
-                      <Table.Tr key={String(id ?? Math.random())}>
+                      <Table.Tr key={conv?.id}>
                         <Table.Td>
-                          <Group gap="xs">
-                            <ThemeIcon variant="light" size={26} radius="md">
-                              <IconMessage2 size={16} />
-                            </ThemeIcon>
-                            <Text fw={600}>{title}</Text>
+                          <Group gap="xs" align="center">
+                            <Avatar size={20} radius="xl">💬</Avatar>
+                            <Text>{label}</Text>
                           </Group>
                         </Table.Td>
                         <Table.Td>
-                          <Text c="dimmed" size="sm">{when}</Text>
+                          <Text size="sm" c="dimmed">{when.toLocaleString()} ({ago})</Text>
                         </Table.Td>
                         <Table.Td>
-                          <Badge variant="light">{count}</Badge>
+                          <Badge variant="light">{msgCount}</Badge>
                         </Table.Td>
-                        <Table.Td className="td-right">
+                        <Table.Td>
                           <Button
                             size="xs"
-                            onClick={() => id != null && resume(id)}
-                            disabled={id == null}
+                            variant="light"
+                            onClick={() => {
+                              if (selectConversation) {
+                                  selectConversation(conv.id);
+                              }
+                              navigate("/chat");
+                            }}
                           >
                             Resume
                           </Button>
@@ -276,38 +486,6 @@ export function ProfilePage() {
           </Card>
         </Grid.Col>
       </Grid>
-
-      {/* Footer meta to mirror Dashboard footer spacing */}
-      <Group justify="space-between" mt="lg" className="foot-row">
-        <Text size="sm" c="dimmed">
-          Profile data is synced to your account
-        </Text>
-      </Group>
-    </div>
+    </Box>
   );
 }
-
-/** small presentational row */
-function Detail({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <Group gap="xs" wrap="nowrap">
-      <ThemeIcon variant="light" size={28} radius="md">
-        {icon}
-      </ThemeIcon>
-      <div>
-        <Text className="field-label">{label}</Text>
-        <Text fw={600}>{value}</Text>
-      </div>
-    </Group>
-  );
-}
-
-export default ProfilePage;

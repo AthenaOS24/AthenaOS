@@ -1,4 +1,3 @@
-// src/pages/TeamPage.tsx
 import { useState } from 'react';
 import {
   Container,
@@ -20,8 +19,8 @@ import {
 } from '@mantine/core';
 import { TbBrandGithub, TbBrandLinkedin, TbMail } from 'react-icons/tb';
 
-// HERO background image
-import heroImg from '../images/IMG_9280.jpg';
+import heroImg from '../images/Team.jpg';
+import './TeamPage.css';
 
 type Member = {
   id: string;
@@ -40,62 +39,56 @@ const TEAM: Member[] = [
   {
     id: '1',
     name: 'Tom Pham Chambers',
-    role: 'Frontend Developer',
+    role: 'Software Engineer',
     email: '104618232@student.swin.edu.au',
-    summary: 'Owns the UI layer, design system, and performance for Athena.',
-    bio:
-      'Tom leads the frontend architecture and component library for Athena. He focuses on accessibility (WCAG), consistent design tokens, and smooth performance across devices to keep the chat experience fast and calming.',
-    skills: ['React', 'TypeScript', 'Mantine', 'Accessibility'],
+    summary: 'Leads the UI architecture, design system, and frontend performance.',
+    bio: 'As a Software Engineer specializing in frontend, Tom architects the component library and ensures a consistent, accessible experience. He focuses on WCAG compliance and smooth performance to keep the chat interface fast and calming.',
+    skills: ['React', 'TypeScript', 'Software Engineering', 'Accessibility'],
   },
   {
     id: '2',
     name: 'Chinmay Kho Khor',
     role: 'Frontend Developer',
     email: '104330769@student.swin.edu.au',
-    summary: 'Delivers features, animations, and responsive layouts.',
-    bio:
-      'Chinmay ships user-facing features end-to-end: responsive views, state management, and motion for a friendly, therapeutic UI. He collaborates closely with UX on readability and tone.',
-    skills: ['React', 'TypeScript', 'Zustand/Redux', 'Framer Motion'],
+    summary: 'Develops user-facing features, animations, and responsive layouts.',
+    bio: 'Chinmay builds and ships end-to-end features for the user interface. His work involves managing complex state, creating responsive views, and implementing motion for a friendly, therapeutic experience in collaboration with the UX team.',
+    skills: ['React', 'TypeScript', 'Zustand', 'Framer Motion'],
   },
   {
     id: '3',
     name: 'Duc Thuan Tran',
-    role: 'AI Engineer',
-    email: '104330455@student.swin.edu.au', // corrected to match your note
-    summary: 'Builds LLM pipelines, safety guardrails, and evaluation.',
-    bio:
-      'Thuan designs Athena’s LLM orchestration, prompt strategy, and retrieval flows. He maintains evaluation harnesses for quality, bias, and safety, with special focus on mental-health guardrails.',
-    skills: ['LLMs', 'Prompting', 'RAG', 'Evaluation'],
+    role: 'AI Engineer & Cloud Engineer',
+    email: '104330455@student.swin.edu.au',
+    summary: 'Manages LLM pipelines and deploys scalable AI infrastructure on the cloud.',
+    bio: 'Thuan handles both the AI models and the cloud infrastructure that powers them. He designs LLM orchestration, prompt strategies, and deploys these systems on scalable cloud platforms, focusing on MLOps and efficient resource management.',
+    skills: ['LLMs', 'Prompting', 'AWS/GCP', 'Terraform', 'Docker'],
   },
   {
     id: '4',
-    name: 'Phat',
-    role: 'Data Analyst',
+    name: 'Tien Phat Dam',
+    role: 'Data Analyst, Backend Tester',
     email: '103508497@student.swin.edu.au',
     summary: 'Analytics, privacy-centric instrumentation, and insights.',
-    bio:
-      'Phat implements privacy-first analytics to understand outcomes without over-collecting data. He builds dashboards for engagement and well-being signals to guide ethical iteration.',
-    skills: ['Analytics', 'A/B Testing', 'SQL', 'Privacy'],
+    bio: 'Phat implements privacy-first analytics to understand user outcomes without over-collecting data. He builds dashboards for engagement and well-being signals to guide ethical product iteration and improve the user experience.',
+    skills: ['Analytics', 'SQL', 'Privacy', 'Data Visualization'],
   },
   {
     id: '5',
     name: 'Sehajpreet Singh',
-    role: 'Backend Developer',
+    role: 'AI Engineer & Data Security',
     email: '104211068@student.swin.edu.au',
-    summary: 'APIs, auth, and reliability for chat services.',
-    bio:
-      'Sehajpreet implements secure APIs, session management, and rate-limits. He owns CI/CD, monitoring, and error budgets to keep Athena stable and trustworthy.',
-    skills: ['Node.js', 'Express', 'PostgreSQL', 'Auth'],
+    summary: 'Develops secure AI features and implements data privacy and security protocols.',
+    bio: 'Sehajpreet focuses on the security and integrity of the AI systems. He implements encryption, access control, and data anonymization techniques for AI data pipelines, while also researching defenses against adversarial attacks like prompt injection.',
+    skills: ['AI Security', 'Python', 'Cryptography', 'Compliance', 'Data Governance'],
   },
   {
     id: '6',
-    name: 'Ash',
-    role: 'Backend Developer',
+    name: 'Ansh Sehgal',
+    role: 'Backend Developer & QA',
     email: '104172848@student.swin.edu.au',
-    summary: 'Data models, integrations, and observability.',
-    bio:
-      'Ash designs robust data models and integrates external services (content, notifications). He improves logging/metrics to speed up debugging and ensure smooth operations.',
-    skills: ['Node.js', 'Prisma/ORM', 'Caching', 'Observability'],
+    summary: 'Builds core backend services and leads the quality assurance strategy.',
+    bio: 'Ansh is responsible for writing clean, scalable Node.js code for the core API while also establishing the backend testing infrastructure. He writes critical integration tests and helps manage the CI/CD pipeline to ensure stable releases.',
+    skills: ['Node.js', 'Prisma/ORM', 'Integration Testing', 'CI/CD'],
   },
 ];
 
@@ -105,67 +98,38 @@ export function TeamPage() {
 
   return (
     <>
-      {/* HERO */}
       <Box
         mx={'calc(var(--app-shell-padding) * -1)'}
         pos="relative"
         h={{ base: 360, md: 460 }}
+        className="hero-section"
         style={{
           backgroundImage: `url(${heroImg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center center',
         }}
       >
-        <Overlay color="#000" opacity={0.18} zIndex={1} />
-        <Container size="lg" h="100%" style={{ position: 'relative', zIndex: 2 }}>
+        <Overlay color="#000" opacity={0.2} zIndex={1} blur={3} />
+        <Container size="lg" h="100%" className="hero-container">
           <Group justify="center" align="center" h="100%">
             <Card
               radius="lg"
               p={{ base: 'lg', md: 'xl' }}
               shadow="xl"
               withBorder
-              style={{
-                width: '100%',
-                maxWidth: 760,
-                background: 'rgba(255,255,255,0.88)',
-                backdropFilter: 'blur(6px)',
-                WebkitBackdropFilter: 'blur(6px)',
-                borderColor: 'rgba(255,255,255,0.7)',
-                boxShadow: '0 18px 40px rgba(0,0,0,0.28)',
-                transform: 'translateY(0)',
-                transition: 'transform 200ms ease, box-shadow 200ms ease',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)';
-                (e.currentTarget as HTMLDivElement).style.boxShadow = '0 24px 56px rgba(0,0,0,0.32)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                (e.currentTarget as HTMLDivElement).style.boxShadow = '0 18px 40px rgba(0,0,0,0.28)';
-              }}
+              className="hero-card"
             >
               <Stack gap={8}>
-                <Title
-                  order={1}
-                  style={{
-                    fontFamily: "'Playfair Display', serif",
-                    lineHeight: 1.1,
-                    color: '#0A2540',
-                  }}
-                >
+                <Title order={1} className="hero-title">
                   Meet the Team
                 </Title>
-
-                <Text size="lg" style={{ maxWidth: 720, color: '#334155' }}>
+                <Text size="lg" className="hero-text">
                   We’re a multidisciplinary group building accessible, effective, and safe
                   mental-health support with Athena.
                 </Text>
-
                 <Group gap="md" mt="xs">
-                  <Anchor href="#purpose" style={{ color: '#0A2540' }}>
+                  <Anchor href="#purpose" className="hero-anchor">
                     Our purpose
                   </Anchor>
-                  <Anchor href="#roadmap" style={{ color: '#0A2540' }}>
+                  <Anchor href="#roadmap" className="hero-anchor">
                     Future roadmap
                   </Anchor>
                 </Group>
@@ -175,14 +139,21 @@ export function TeamPage() {
         </Container>
       </Box>
 
-      {/* TEAM GRID */}
       <Container size="lg" py="xl">
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
           {TEAM.map((m) => (
-            <Card key={m.id} withBorder radius="md" p="lg" shadow="sm" style={{ background: 'white' }}>
-              <Stack gap="sm">
-                <Group justify="space-between" align="flex-start">
-                  <Group gap="md">
+            <Card 
+              key={m.id} 
+              withBorder 
+              radius="md" 
+              p="lg" 
+              shadow="sm" 
+              className="team-card"
+              style={{ display: 'flex', flexDirection: 'column' }}
+            >
+              <Stack gap="sm" style={{ flex: 1 }}>
+                <Group wrap="nowrap" align="center" justify="space-between">
+                  <Group gap="md" align="center">
                     {m.image ? (
                       <Avatar src={m.image} alt={`${m.name} photo`} size={64} radius="xl" />
                     ) : (
@@ -194,14 +165,14 @@ export function TeamPage() {
                           .slice(0, 2)}
                       </Avatar>
                     )}
-                    <div>
-                      <Title order={4} style={{ lineHeight: 1.2 }}>
+                    <Stack gap={0} justify="center">
+                      <Title order={4} className="member-name">
                         {m.name}
                       </Title>
                       <Text size="sm" c="dimmed">
                         {m.role}
                       </Text>
-                    </div>
+                    </Stack>
                   </Group>
                   <Group gap={6}>
                     {m.github && (
@@ -235,9 +206,11 @@ export function TeamPage() {
                     )}
                   </Group>
                 </Group>
-
-                <Text size="sm">{m.summary}</Text>
-
+                
+                <Text size="sm" style={{ flexGrow: 1 }}>
+                  {m.summary}
+                </Text>
+                
                 <Group gap={6} mt={4}>
                   {m.skills.map((s) => (
                     <Badge key={s} variant="light">
@@ -245,9 +218,9 @@ export function TeamPage() {
                     </Badge>
                   ))}
                 </Group>
-
+                
                 <Divider my="xs" />
-
+                
                 <Group justify="space-between" mt="xs">
                   <Button size="xs" variant="light" onClick={() => setOpenedId(m.id)}>
                     Read more
@@ -262,10 +235,8 @@ export function TeamPage() {
             </Card>
           ))}
         </SimpleGrid>
-
-        {/* PURPOSE */}
-        <Card id="purpose" withBorder radius="md" p="lg" mt="xl" shadow="sm" style={{ background: 'white' }}>
-          <Title order={3} mb="xs" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <Card id="purpose" withBorder radius="md" p="lg" mt="xl" shadow="sm" className="info-card">
+          <Title order={3} mb="xs" className="card-title">
             Why we created Athena
           </Title>
           <Text c="dimmed" mb="sm">
@@ -280,9 +251,8 @@ export function TeamPage() {
           </Stack>
         </Card>
 
-        {/* ROADMAP */}
-        <Card id="roadmap" withBorder radius="md" p="lg" mt="lg" shadow="sm" style={{ background: 'white' }}>
-          <Title order={3} mb="xs" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <Card id="roadmap" withBorder radius="md" p="lg" mt="lg" shadow="sm" className="info-card">
+          <Title order={3} mb="xs" className="card-title">
             Future progress & how we’ll get there
           </Title>
           <Stack gap="sm">
@@ -297,9 +267,7 @@ export function TeamPage() {
               <Text size="sm">• Run formative usability tests; iterate on onboarding and tone.</Text>
               <Text size="sm">• Instrument privacy-centric analytics for outcome tracking.</Text>
             </Stack>
-
             <Divider my="sm" />
-
             <Group gap="xs">
               <Badge variant="light">Mid-term</Badge>
               <Text size="sm" c="dimmed">
@@ -311,9 +279,7 @@ export function TeamPage() {
               <Text size="sm">• Evaluation harness for quality, bias, and safety regressions.</Text>
               <Text size="sm">• Content expansion: CBT/DBT-informed modules and resources.</Text>
             </Stack>
-
             <Divider my="sm" />
-
             <Group gap="xs">
               <Badge variant="light">Long-term</Badge>
               <Text size="sm" c="dimmed">
@@ -328,8 +294,7 @@ export function TeamPage() {
           </Stack>
         </Card>
       </Container>
-
-      {/* BIO MODAL */}
+      
       <Modal opened={!!openedId} onClose={() => setOpenedId(null)} title={openedMember?.name} centered>
         <Text fw={600} mb={4}>
           {openedMember?.role}

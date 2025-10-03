@@ -2,13 +2,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Paper, TextInput, Button, Stack, Group, Text, ScrollArea, Avatar, Title, Center,
-  Drawer, NavLink, Divider, Box, Alert,
+  Drawer, NavLink, Divider, Box, Alert, Modal,
 } from '@mantine/core';
-import { IconMessage2, IconPlus } from '@tabler/icons-react';
+import { IconMessage2, IconPlus, IconChartLine } from '@tabler/icons-react';
 import axios, { type AxiosError } from 'axios';
 import { useAuthStore } from '../context/authStore';
 import { useChatStore, type Message } from '../context/chatStore';
-import { sendMessage } from '../services/apiService';
+import { sendMessage, getEmotionHistory } from '../services/apiService';
+import { EmotionChart } from '../components/EmotionChart';  
+
+interface Emotion { label: string; score: number; }
+interface EmotionHistoryRecord { timestamp: string; emotions: Emotion[]; }
 
 export function ChatPage() {
   const token = useAuthStore((s) => s.token);
@@ -23,8 +27,12 @@ export function ChatPage() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [chartModalOpen, setChartModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // State mới cho dữ liệu biểu đồ
+  const [emotionData, setEmotionData] = useState<EmotionHistoryRecord[]>([]);
+
   const viewport = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
     viewport.current?.scrollTo({ top: viewport.current.scrollHeight, behavior: 'smooth' });
@@ -39,11 +47,21 @@ export function ChatPage() {
       });
     }
   }, [token, fetchConversations]);
+  
+  // Effect mới để lấy dữ liệu biểu đồ
+  useEffect(() => {
+    if (selectedConversation && token) {
+      // SỬA LỖI 1: Chuyển đổi ID từ number sang string
+      getEmotionHistory(String(selectedConversation.id), token)
+        .then(data => setEmotionData(data))
+        .catch(e => console.error('Failed to fetch emotion data:', e));
+    } else {
+      setEmotionData([]); // Xóa dữ liệu khi không có conversation
+    }
+  }, [selectedConversation, token]);
 
   const msgs = useMemo(() => {
-    if (!selectedConversation?.messages) {
-      return [];
-    }
+    if (!selectedConversation?.messages) return [];
     return [...selectedConversation.messages].sort(
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
@@ -66,8 +84,10 @@ export function ChatPage() {
     setNewMessage('');
     setLoading(true);
     try {
-      await sendMessage(text, token);
-      await fetchConversations(token);
+      // SỬA LỖI 2: Chuyển đổi ID từ number sang string (nếu có)
+      const conversationId = selectedConversation ? String(selectedConversation.id) : null;
+      await sendMessage(text, conversationId, token);
+      await fetchConversations(token); // Lấy lại dữ liệu mới nhất
     } catch (e) {
       console.error('Failed to send message:', e);
       setError(humanizeAxiosError(e));
@@ -92,6 +112,9 @@ export function ChatPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
+       <Modal opened={chartModalOpen} onClose={() => setChartModalOpen(false)} title="Emotion Analysis" size="xl">
+          <EmotionChart data={emotionData} />
+       </Modal>
       <Title order={3} mb="xs">AthenaAI Chat</Title>
       {error && (
         <Alert color="red" mb="sm" title="Chat error" withCloseButton onClose={() => setError(null)}>
@@ -101,6 +124,15 @@ export function ChatPage() {
       <Group mb="sm" justify="space-between">
         <Button variant="light" leftSection={<IconMessage2 size={16} />} onClick={() => setDrawerOpen(true)}>
           Conversations
+        </Button>
+        {/* Nút mới để xem biểu đồ */}
+        <Button 
+          variant="outline" 
+          leftSection={<IconChartLine size={16} />} 
+          onClick={() => setChartModalOpen(true)}
+          disabled={!selectedConversation}
+        >
+          View Emotion Chart
         </Button>
         <Button leftSection={<IconPlus size={16} />} onClick={handleNewConversation}>
           New Chat
@@ -148,7 +180,6 @@ export function ChatPage() {
             disabled={!token || loading}
           />
           <Button type="submit" loading={loading} disabled={!token || !newMessage.trim()}>Send</Button>
-          <Button type="submit" loading={loading} disabled={!token}>Voice</Button>
         </Group>
       </Paper>
       <Drawer

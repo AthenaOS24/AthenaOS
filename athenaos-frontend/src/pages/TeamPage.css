@@ -1,0 +1,54 @@
+.hero-section {
+  background-size: cover;
+  background-position: center 30%;
+}
+
+.hero-container {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-card {
+  width: 100%;
+  max-width: 760px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  transform: translateY(0);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.hero-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.32);
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  line-height: 1.1;
+  color: #0a2540;
+}
+
+.hero-text {
+  max-width: 720px;
+  color: #334155;
+}
+
+.hero-anchor {
+  color: #0a2540;
+}
+
+.team-card,
+.info-card {
+  background: white;
+}
+
+.member-name {
+  line-height: 1.2;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+}

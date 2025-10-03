@@ -65,7 +65,14 @@ exports.login = async (req, res) => {
             { expiresIn: '5h' }, 
             (err, token) => {
                 if (err) throw err;
-                res.json({ token });
+                res.json({
+                    token,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                    }
+                });
             }
         );
     } catch (error) {

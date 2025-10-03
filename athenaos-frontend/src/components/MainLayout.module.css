@@ -30,20 +30,19 @@
 
 /* --- Responsive --- */
 .desktopNav {
-  display: flex; /* Mặc định là flex */
+  display: flex; 
 }
 
 .mobileNav {
-  display: none; /* Mặc định ẩn layout mobile */
+  display: none;  
 }
 
-/* Khi màn hình nhỏ hơn 768px */
 @media (max-width: 768px) {
   .desktopNav {
-    display: none; /* Ẩn layout desktop */
+    display: none;  
   }
 
   .mobileNav {
-    display: flex; /* Hiện layout mobile */
+    display: flex;  
   }
 }

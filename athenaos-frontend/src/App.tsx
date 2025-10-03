@@ -9,10 +9,12 @@ import { LoginPage } from './pages/LoginPage';
 import Blog from './pages/Blog';
 import { ServicesPage } from './pages/ServicePage';
 import { ContactPage } from './pages/ContactPage';
+import { TutorialPage } from './pages/TutorialPage';
 
 import { ChatPage } from './pages/ChatPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { DashboardPage } from './pages/DashboardPage';
+import { VoicePage } from './pages/VoicePage';  
 
 export default function App() {
   return (
@@ -26,10 +28,12 @@ export default function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/tutorial" element={<TutorialPage />} /> 
 
           {/* Private */}
           <Route element={<ProtectedRoute />}>
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/voice" element={<VoicePage />} />  
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
           </Route>

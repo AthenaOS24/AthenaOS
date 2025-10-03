@@ -139,7 +139,7 @@ export function ContactPage() {
           </Text>
           <Divider my="sm" />
           <Stack gap={4}>
-            <Text><strong>Email:</strong> support@athenaos.app</Text>
+            <Text><strong>Email:</strong> support@athena_ai.app</Text>
             <Text><strong>Hours:</strong> Mon–Fri, 9:00–17:00 AEST</Text>
             <Text c="dimmed" size="sm">
               For urgent help, see the helplines below.
@@ -170,7 +170,7 @@ export function ContactPage() {
         </Badge>
       </Group>
       <Text c="dimmed" mb="lg">
-        If you are in immediate danger, call <Text span fw={700}>000</Text> now. These services are independent from AthenaOS.
+        If you are in immediate danger, call <Text span fw={700}>000</Text> now. These services are independent from AthenaAI.
       </Text>
 
       <Stack gap="md">
@@ -229,7 +229,7 @@ export function ContactPage() {
       <Card withBorder radius="md" mt="xl" p="lg" style={{ background: 'white' }}>
         <Title order={5} mb={6}>Important Disclaimer</Title>
         <Text size="sm" c="dimmed">
-          AthenaOS is <Text span fw={700}>not</Text> a crisis service and does not provide medical or emergency assistance.
+          AthenaAI is <Text span fw={700}>not</Text> a crisis service and does not provide medical or emergency assistance.
           If you are in danger, experiencing a medical emergency, or thinking about harming yourself, call <Text span fw={700}>000</Text> or go to your nearest emergency department immediately.
           The helpline information above is provided for convenience and may change; please verify details directly with each service.
         </Text>

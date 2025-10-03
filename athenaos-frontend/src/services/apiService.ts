@@ -23,11 +23,29 @@ export const registerUser = async (username: string, password: string, email: st
   return response.data;
 };
 
-export const sendMessage = async (text: string, token: string) => {
+export const sendMessage = async (text: string, conversationId: string | null, token: string) => {
   const response = await axios.post(
     `${API_URL}/chat/send-message`,
-    { text },
+    { text, conversationId },
     { headers: { Authorization: `Bearer ${token}` }, timeout: 20000 }
   );
   return response.data;
 };
+
+export const getEmotionHistory = async (conversationId: string, token: string) => {
+  const response = await axios.get(
+    `${API_URL}/chat/${conversationId}/emotions`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+}
+
+export const synthesizeSpeech = async (text: string, token: string): Promise<{ audioContent: string }> => {
+  const response = await axios.post(
+    `${API_URL}/tts/synthesize`,
+    { text },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+ 

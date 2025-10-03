@@ -52,7 +52,7 @@ export function LoginPage() {
     try {
       const data = await loginUser(loginEmail, loginPassword);
       loginAction(data.token);
-      // ✅ Go to HOME after login
+      // Go to HOME after login
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Login failed:', error);
@@ -89,7 +89,7 @@ export function LoginPage() {
     <div className="login-page">
       <Container size={420} my={40} className="fade-in">
         <Title className="login-title" ta="center">
-          Welcome to AthenaOS 
+          Welcome to AthenaAI 
         </Title>
 
         {errMsg && (
