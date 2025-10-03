@@ -5,6 +5,7 @@ const cors = require('cors');
 const { connectDB, sequelize } = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
+const ttsRoutes = require('./routes/ttsRoutes.js');
 
 dotenv.config();
 
