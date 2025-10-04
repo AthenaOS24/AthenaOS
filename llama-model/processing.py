@@ -75,7 +75,7 @@ def generate_cbt_intervention(detected_patterns, emotions):
         if interventions:
             return random.choice(interventions)
     if emotions:
-        strong_negative = [e for e in emotions if e['label'].lower() in ['sadness', 'anger', 'fear'] and e['score'] > 0.7]
+        strong_negative = [e for e in emotions if e['label'].lower() in ['sadness', 'anger', 'fear'] and e['score'] > 0.95]
         if strong_negative:
             return random.choice(GENERAL_CBT_TECHNIQUES)
     return random.choice(GENERAL_CBT_TECHNIQUES[:2])
