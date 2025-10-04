@@ -21,7 +21,7 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
-import { IconCheck, IconInfoCircle, IconPlayerPlay, IconRocket, IconShield, IconWaveSquare, IconMessages, IconAlertTriangle } from "@tabler/icons-react";
+import { IconCheck, IconInfoCircle, IconPlayerPlay, IconRocket, IconShield, IconWaveSquare, IconMessages, IconAlertTriangle, IconBulb } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import "./TutorialPage.css";
 
@@ -99,6 +99,9 @@ export function TutorialPage() {
           </Tabs.Tab>
           <Tabs.Tab value="setup" leftSection={<IconWaveSquare size={16} />}>
             Setup
+          </Tabs.Tab>
+          <Tabs.Tab value="guide" leftSection={<IconBulb size={16} />}>
+            Usage Guide
           </Tabs.Tab>
           <Tabs.Tab value="chat" leftSection={<IconMessages size={16} />}>
             Chat
@@ -212,6 +215,59 @@ npm run dev           # http://localhost:5173`}</Code>
               When testing registration, remember that both <b>usernames and emails must be unique</b>. If you try to register with credentials that are already in the database, the request will fail with a "Bad Request" error.
             </Alert>
           </Card>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="guide" pt="md">
+            <Card className="page-card" withBorder padding="lg" radius="md">
+                <Title order={3} className="card-title">How to Talk to Athena</Title>
+                <Text mt="xs">
+                    Athena is an AI therapist specializing in mental and emotional well-being. To get the most helpful responses, it's best to interact with it as you would in a therapy session.
+                </Text>
+
+                <Divider my="md" />
+
+                <Title order={4} c="teal">✅ What to Ask (In-Scope Topics)</Title>
+                <Text mt="xs">Focus on your personal feelings, thoughts, and experiences. Athena is designed to help with:</Text>
+                <List mt="sm" spacing="xs">
+                    <List.Item><b>Exploring Emotions:</b> "I'm feeling really anxious about my exam tomorrow."</List.Item>
+                    <List.Item><b>Difficult Situations:</b> "I had an argument with my friend and I don't know what to do."</List.Item>
+                    <List.Item><b>Understanding Thoughts:</b> "I keep thinking that I'm not good enough for my job."</List.Item>
+                    <List.Item><b>Self-Improvement:</b> "How can I build more confidence?"</List.Item>
+                </List>
+
+                <Divider my="md" />
+
+                <Title order={4} c="red">❌ What Not to Ask (Out-of-Scope Topics)</Title>
+                <Text mt="xs">Athena is not a general knowledge chatbot. It will decline to answer questions that are not related to its purpose, such as:</Text>
+                <List mt="sm" spacing="xs">
+                    <List.Item><b>General Knowledge:</b> "What is the capital of Australia?"</List.Item>
+                    <List.Item><b>Instructions & Recipes:</b> "How do I cook pasta?"</List.Item>
+                    <List.Item><b>Technical or Factual Questions:</b> "Write a python script for me."</List.Item>
+                    <List.Item><b>Financial or Legal Advice:</b> "What stock should I buy?"</List.Item>
+                </List>
+
+                 <Alert mt="md" variant="light" color="blue" title="What Happens If You Ask an Out-of-Scope Question?" icon={<IconInfoCircle />}>
+                    If you ask a question outside of Athena's expertise, it is programmed to respond with a polite refusal, like this:
+                    <Paper withBorder p="xs" radius="sm" mt="xs">
+                        <Text fz="sm" ff="monospace" c="dimmed">
+                            "I'm sorry, I can only answer questions related to mental and emotional well-being. How are you feeling today?"
+                        </Text>
+                    </Paper>
+                    This is expected behavior and confirms the system is working correctly.
+                </Alert>
+
+                <Divider my="md" />
+
+                <Title order={4}>Safety Features</Title>
+                 <List mt="sm" spacing="xs" icon={<ThemeIcon color="red" size={24} radius="xl"><IconShield size={16} /></ThemeIcon>}>
+                    <List.Item>
+                        <b>Crisis Detection:</b> If you express thoughts of self-harm or being in immediate danger, Athena is programmed to pause the conversation and provide immediate contact information for professional crisis services. Your safety is the top priority.
+                    </List.Item>
+                    <List.Item>
+                        <b>Content Moderation:</b> Messages containing clear hate speech or abusive language will be automatically blocked by a safety filter to maintain a constructive environment.
+                    </List.Item>
+                </List>
+            </Card>
         </Tabs.Panel>
 
         <Tabs.Panel value="chat" pt="md">
