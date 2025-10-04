@@ -233,6 +233,9 @@ export function VoicePage() {
           </ActionIcon>
         </Group>
       </Paper>
+      <Text c="dimmed" ta="center" size="xs" mt="xs">
+        Athena is a student project and can make mistakes. Emotion analysis may also be inaccurate. Please remember to clarify important information.
+      </Text>
       <Drawer opened={drawerOpen} onClose={() => setDrawerOpen(false)} title="Conversations" position="right">
         <Stack>
           <Button fullWidth leftSection={<IconPlus size={16} />} onClick={handleNewConversation}>New Chat</Button>

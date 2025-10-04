@@ -1,4 +1,3 @@
-// src/pages/ChatPage.tsx
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Paper, TextInput, Button, Stack, Group, Text, ScrollArea, Avatar, Title, Center,
@@ -9,7 +8,7 @@ import axios, { type AxiosError } from 'axios';
 import { useAuthStore } from '../context/authStore';
 import { useChatStore, type Message } from '../context/chatStore';
 import { sendMessage, getEmotionHistory } from '../services/apiService';
-import { EmotionChart } from '../components/EmotionChart';  
+import { EmotionChart } from '../components/EmotionChart';
 
 interface Emotion { label: string; score: number; }
 interface EmotionHistoryRecord { timestamp: string; emotions: Emotion[]; }
@@ -30,7 +29,6 @@ export function ChatPage() {
   const [chartModalOpen, setChartModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // State mới cho dữ liệu biểu đồ
   const [emotionData, setEmotionData] = useState<EmotionHistoryRecord[]>([]);
 
   const viewport = useRef<HTMLDivElement>(null);
@@ -48,17 +46,15 @@ export function ChatPage() {
     }
   }, [token, fetchConversations]);
   
-  // Effect mới để lấy dữ liệu biểu đồ
   useEffect(() => {
     if (selectedConversation && token) {
-      // SỬA LỖI 1: Chuyển đổi ID từ number sang string
       getEmotionHistory(String(selectedConversation.id), token)
         .then(data => setEmotionData(data))
         .catch(e => console.error('Failed to fetch emotion data:', e));
     } else {
-      setEmotionData([]); // Xóa dữ liệu khi không có conversation
+      setEmotionData([]);
     }
-  }, [selectedConversation, token]);
+  }, [selectedConversation, token, conversations]);
 
   const msgs = useMemo(() => {
     if (!selectedConversation?.messages) return [];
@@ -84,10 +80,9 @@ export function ChatPage() {
     setNewMessage('');
     setLoading(true);
     try {
-      // SỬA LỖI 2: Chuyển đổi ID từ number sang string (nếu có)
       const conversationId = selectedConversation ? String(selectedConversation.id) : null;
       await sendMessage(text, conversationId, token);
-      await fetchConversations(token); // Lấy lại dữ liệu mới nhất
+      await fetchConversations(token);
     } catch (e) {
       console.error('Failed to send message:', e);
       setError(humanizeAxiosError(e));
@@ -125,7 +120,6 @@ export function ChatPage() {
         <Button variant="light" leftSection={<IconMessage2 size={16} />} onClick={() => setDrawerOpen(true)}>
           Conversations
         </Button>
-        {/* Nút mới để xem biểu đồ */}
         <Button 
           variant="outline" 
           leftSection={<IconChartLine size={16} />} 
@@ -182,6 +176,9 @@ export function ChatPage() {
           <Button type="submit" loading={loading} disabled={!token || !newMessage.trim()}>Send</Button>
         </Group>
       </Paper>
+      <Text c="dimmed" ta="center" size="xs" mt="xs">
+        Athena is a student project and can make mistakes. Emotion analysis may also be inaccurate. Please remember to clarify important information.
+      </Text>
       <Drawer
         opened={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -220,9 +217,14 @@ export function ChatPage() {
 
 function humanizeAxiosError(e: unknown): string {
   if (axios.isAxiosError(e)) {
-    const error = e as AxiosError<{ message?: string }>;
+    const error = e as AxiosError<{ message?: string, detail?: string }>;
     const code = error.response?.status;
-    const msg = error.response?.data?.message || error.response?.statusText || 'Request failed';
+    
+    if (code === 400 && error.response?.data?.detail?.includes('harmful content')) {
+      return "Your message was flagged by our safety filter. Please rephrase your message to focus on personal feelings and experiences.";
+    }
+
+    const msg = error.response?.data?.message || error.response?.data?.detail || error.response?.statusText || 'Request failed';
     if (code === 401) return 'Not authorized (401). Please login again.';
     if (code === 404) return 'Endpoint not found (404). Check API URL.';
     return `${msg} (HTTP ${code})`;
