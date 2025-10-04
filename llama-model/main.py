@@ -27,7 +27,7 @@ else:
 
 app = FastAPI(
     title="Athena AI Therapist API (CBT Enhanced Hybrid Architecture with Groq/Llama3)",
-    version="7.0.0",
+    version="7.1.0",
     description="Advanced AI therapist with Cognitive Behavioral Therapy integration, powered by Llama-3 via Groq."
 )
 
@@ -78,11 +78,28 @@ class ChatResponse(BaseModel):
     timestamp: str
     word_count: int
 
+def prepare_analysis_for_response(analysis_dict: dict) -> dict:
+    prepared = analysis_dict.copy()
+    prepared['sentiment'] = {'label': prepared.get('sentiment', 'unknown'), 'score': prepared.get('sentiment_score', 0.0)}
+    
+    prepared['cbt_analysis'] = {
+        'patterns': prepared.get('cbt_analysis', {}).get('patterns', []),
+        'intervention': prepared.get('cbt_analysis', {}).get('intervention', None),
+        'repetitive_patterns': prepared.get('cbt_analysis', {}).get('repetitive_patterns', [])
+    }
+    
+    if prepared.get('urgency_level'):
+        prepared['resources'] = MENTAL_HEALTH_RESOURCES.get(prepared['urgency_level'], [])[:3]
+    else:
+        prepared['resources'] = None
+        
+    return prepared
+
 @app.get("/", tags=["Status"])
 async def read_root():
     return {
         "status": "Athena AI API (CBT Enhanced with Groq/Llama-3) is running",
-        "version": "7.0.0",
+        "version": "7.1.0",
         "features": ["CBT Pattern Detection", "Enhanced Crisis Detection", "Dynamic Interventions", "Groq/Llama-3 Powered"]
     }
 
@@ -112,15 +129,9 @@ async def handle_chat(request: ChatRequest):
 
     analysis_result_dict = combined_sentiment_analysis(sanitized_input, conversation_history[session_id])
     
-    if analysis_result_dict['urgency_level'] == 'crisis':
+    if analysis_result_dict.get('urgency_level') == 'crisis':
+        analysis_for_response = prepare_analysis_for_response(analysis_result_dict)
         crisis_resources = MENTAL_HEALTH_RESOURCES['crisis'][:2]
-        analysis_for_response = analysis_result_dict.copy()
-        analysis_for_response['sentiment'] = {'label': analysis_result_dict['sentiment'], 'score': analysis_result_dict['sentiment_score']}
-        analysis_for_response['cbt_analysis'] = {
-            'patterns': analysis_result_dict.get('cbt_patterns', []),
-            'intervention': analysis_result_dict.get('cbt_intervention'),
-            'repetitive_patterns': analysis_result_dict.get('repetitive_patterns', [])
-        }
         
         return ChatResponse(
             response=f"I hear the pain and urgency in your words, and I'm deeply concerned for your safety. Please know you're not alone right now.\n\n**IMMEDIATE HELP IS AVAILABLE:**\n" + "\n".join([f"• {r}" for r in crisis_resources]) + "\n\nI'm here to listen, but please reach out to these services immediately.",
@@ -130,21 +141,22 @@ async def handle_chat(request: ChatRequest):
             word_count=len(sanitized_input.split())
         )
 
-    repetitive_patterns = analysis_result_dict['cbt_analysis']['repetitive_patterns']
-    anti_repetition_instruction = generate_anti_repetition_instruction(repetitive_patterns)
-    cbt_instruction = ""
-    detected_patterns = analysis_result_dict['cbt_analysis']['patterns']
-    
-    if detected_patterns:
-        primary_pattern = detected_patterns[0]
-        intervention = analysis_result_dict['cbt_analysis']['intervention']
-        cbt_instruction = f"The user exhibits {primary_pattern} cognitive distortion. Your response should: 1. First validate their emotions. 2. Gently introduce the CBT concept. 3. Suggest the specific technique: '{intervention}'. 4. End with an open-ended question."
-    elif any(emo['label'].lower() in ['sadness', 'anger', 'fear'] and emo['score'] > 0.7 for emo in analysis_result_dict['emotions']):
-        cbt_instruction = "The user expresses strong negative emotions. Prioritize: 1. Deep empathy and validation. 2. A simple coping technique (e.g., breathing). 3. An invitation to explore the emotion. 4. Avoid problem-solving."
-    
-    primary_emotion = max(analysis_result_dict['emotions'], key=lambda x: x['score'])['label'] if analysis_result_dict['emotions'] else 'unclear'
-    
-    system_prompt = f"""
+    try:
+        repetitive_patterns = analysis_result_dict.get('cbt_analysis', {}).get('repetitive_patterns', [])
+        anti_repetition_instruction = generate_anti_repetition_instruction(repetitive_patterns)
+        cbt_instruction = ""
+        detected_patterns = analysis_result_dict.get('cbt_analysis', {}).get('patterns', [])
+        
+        if detected_patterns:
+            primary_pattern = detected_patterns[0]
+            intervention = analysis_result_dict.get('cbt_analysis', {}).get('intervention')
+            cbt_instruction = f"The user exhibits {primary_pattern} cognitive distortion. Your response should: 1. First validate their emotions. 2. Gently introduce the CBT concept. 3. Suggest the specific technique: '{intervention}'. 4. End with an open-ended question."
+        elif any(emo['label'].lower() in ['sadness', 'anger', 'fear'] and emo['score'] > 0.7 for emo in analysis_result_dict.get('emotions', [])):
+            cbt_instruction = "The user expresses strong negative emotions. Prioritize: 1. Deep empathy and validation. 2. A simple coping technique (e.g., breathing). 3. An invitation to explore the emotion. 4. Avoid problem-solving."
+        
+        primary_emotion = max(analysis_result_dict.get('emotions', []), key=lambda x: x['score'])['label'] if analysis_result_dict.get('emotions') else 'unclear'
+        
+        system_prompt = f"""
 You are Athena, a compassionate AI therapist specializing in Cognitive Behavioral Therapy (CBT).
 
 CRITICAL RESPONSE GUIDELINES:
@@ -156,22 +168,20 @@ CRITICAL RESPONSE GUIDELINES:
 - End with an open-ended question.
 
 CURRENT USER STATE:
-- Sentiment: {analysis_result_dict['sentiment']}
+- Sentiment: {analysis_result_dict.get('sentiment')}
 - Primary Emotion: {primary_emotion}
 - Detected CBT Patterns: {', '.join(detected_patterns) if detected_patterns else 'None'}
-- Urgency Level: {analysis_result_dict['urgency_level'] or 'Routine'}
+- Urgency Level: {analysis_result_dict.get('urgency_level') or 'Routine'}
 
 {cbt_instruction}
 
 Your role is to create a safe, empathetic space where the user feels heard and empowered.
 """
 
-    messages_for_groq = [{"role": "system", "content": system_prompt}]
-    messages_for_groq.extend(conversation_history[session_id][-6:])
-    messages_for_groq.append({"role": "user", "content": sanitized_input})
-
-    try:
-        logger.info(f"Payload being sent to Groq: {messages_for_groq}")
+        messages_for_groq = [{"role": "system", "content": system_prompt}]
+        messages_for_groq.extend(conversation_history[session_id][-6:])
+        messages_for_groq.append({"role": "user", "content": sanitized_input})
+        
         logger.info(f"Generating Llama-3 response via Groq for: {sanitized_input[:50]}...")
         
         chat_completion = client.chat.completions.create(
@@ -183,27 +193,17 @@ Your role is to create a safe, empathetic space where the user feels heard and e
         )
         
         ai_response = chat_completion.choices[0].message.content.strip()
-
-        final_response = ai_response
-        word_count = len(final_response.split())
+        word_count = len(ai_response.split())
 
         conversation_history[session_id].append({'role': 'user', 'content': request.user_input})
-        conversation_history[session_id].append({'role': 'assistant', 'content': final_response})
+        conversation_history[session_id].append({'role': 'assistant', 'content': ai_response})
 
-        final_analysis = analysis_result_dict.copy()
-        final_analysis['sentiment'] = {'label': final_analysis['sentiment'], 'score': final_analysis['sentiment_score']}
-        final_analysis['cbt_analysis'] = {
-            'patterns': [], 
-            'intervention': None,
-            'repetitive_patterns': []
-        }
-        if final_analysis['urgency_level']:
-            final_analysis['resources'] = MENTAL_HEALTH_RESOURCES.get(final_analysis['urgency_level'], [])[:3]
+        final_analysis = prepare_analysis_for_response(analysis_result_dict)
 
         logger.info(f"Response generated successfully ({word_count} words)")
 
         return ChatResponse(
-            response=final_response,
+            response=ai_response,
             analysis=AnalysisResult(**final_analysis),
             conversation_id=session_id,
             timestamp=datetime.now().isoformat(),
@@ -214,14 +214,11 @@ Your role is to create a safe, empathetic space where the user feels heard and e
         logger.error(f"Groq API Error: {e}")
         raise HTTPException(status_code=503, detail="Service Unavailable: Could not connect to the generative AI service.")
     except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred in chat generation: {e}")
+        traceback.print_exc()
         fallback_response = "I appreciate you sharing that. I'm having a little trouble processing my thoughts right now, but I'm still here to listen. Could you tell me a bit more?"
         
-        analysis_for_response = analysis_result_dict.copy()
-        analysis_for_response['sentiment'] = {'label': analysis_result_dict['sentiment'], 'score': analysis_result_dict['sentiment_score']}
-        analysis_for_response['cbt_analysis'] = {
-            'patterns': [], 'intervention': None, 'repetitive_patterns': []
-        }
+        analysis_for_response = prepare_analysis_for_response(analysis_result_dict)
         
         return ChatResponse(
             response=fallback_response,
