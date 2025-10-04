@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
   Paper, Button, Stack, Group, Text, ScrollArea, Avatar, Title, Center,
   Drawer, NavLink, Divider, Box, Alert, Modal, ActionIcon,
@@ -47,6 +47,7 @@ export function VoicePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const finalTranscriptRef = useRef('');
   
   const viewport = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -56,6 +57,8 @@ export function VoicePage() {
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
         recognitionRef.current.stop();
       }
       if (audioRef.current) {
@@ -65,51 +68,7 @@ export function VoicePage() {
     };
   }, []);
 
-  useEffect(() => {
-    const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognitionImpl) {
-      setError('Speech recognition is not supported in this browser.');
-      return;
-    }
-
-    const recognition = new SpeechRecognitionImpl();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event) => {
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        }
-      }
-      if (finalTranscript) {
-        setTranscript(prev => prev + finalTranscript + ' ');
-      }
-    };
-    
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    recognitionRef.current = recognition;
-  }, []);
-
-  const handleToggleRecording = () => {
-    if (isRecording) {
-      recognitionRef.current?.stop();
-      if (transcript.trim()) {
-        handleSend(transcript.trim());
-      }
-    } else {
-      setTranscript('');
-      recognitionRef.current?.start();
-      setIsRecording(true);
-    }
-  };
-
-  const handleSend = async (text: string) => {
+  const handleSend = useCallback(async (text: string) => {
     if (!token || !text.trim()) return;
 
     setError(null);
@@ -142,6 +101,52 @@ export function VoicePage() {
     } finally {
       setLoading(false);
       setTranscript('');
+    }
+  }, [token, selectedConversation, fetchConversations]);
+
+  useEffect(() => {
+    const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionImpl) {
+      setError('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognitionImpl();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognitionRef.current = recognition;
+
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const transcriptChunk = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscriptRef.current += transcriptChunk;
+        } else {
+          interimTranscript += transcriptChunk;
+        }
+      }
+      setTranscript(finalTranscriptRef.current + interimTranscript);
+    };
+    
+    recognition.onend = () => {
+      setIsRecording(false);
+      const transcriptToSend = finalTranscriptRef.current.trim();
+      if (transcriptToSend) {
+        handleSend(transcriptToSend);
+      }
+    };
+  }, [handleSend]);
+
+  const handleToggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+    } else {
+      finalTranscriptRef.current = '';
+      setTranscript('');
+      recognitionRef.current?.start();
+      setIsRecording(true);
     }
   };
 
