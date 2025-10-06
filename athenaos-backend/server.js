@@ -1,10 +1,10 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const { connectDB, sequelize } = require('./src/config/db');
+const { connectDB, getSequelize } = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
-const ttsRoutes = require('./src/routes/ttsRoutes'); 
+const ttsRoutes = require('./src/routes/ttsRoutes');
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
@@ -32,27 +32,29 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/tts', ttsRoutes);  
+app.use('/api/tts', ttsRoutes);
 
 app.get('/', (req, res) => {
-    res.send('API is running successfully!');
+  res.send('API is running successfully!');
 });
 
 const startServer = async () => {
-    try {
-        await connectDB();
-        await sequelize.sync();
-        console.log("All models were synchronized successfully.");
+  try {
+    await connectDB();
+    
+    const sequelize = getSequelize();
+    await sequelize.sync();
+    console.log("All models were synchronized successfully.");
 
-        const PORT = process.env.PORT || 8888;
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
-        });
+    const PORT = process.env.PORT || 8888;
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
 
-    } catch (error) {
-        console.error("FATAL: Failed to start the server due to an error:", error);
-        process.exit(1);  
-    }
+  } catch (error) {
+    console.error("FATAL: Failed to start the server due to an error:", error);
+    process.exit(1);
+  }
 };
 
 startServer();
