@@ -1,38 +1,38 @@
-// src/config/db.js
 const { Sequelize } = require('sequelize');
 
-let sequelize;
-
-const connectDB = async () => {
-  const dbUrl = process.env.POSTGRES_URL;
-
-  if (!dbUrl) {
-    console.error('FATAL ERROR: POSTGRES_URL is not defined.');
-    process.exit(1);
-  }
-
-  try {
-    sequelize = new Sequelize(dbUrl, {
-      dialect: 'postgres',
-      protocol: 'postgres',
-      dialectOptions: {
+// Khởi tạo Sequelize Instance ngay lập tức
+const sequelize = new Sequelize(process.env.POSTGRES_URL, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    dialectOptions: {
         ssl: {
-          require: true,
-          rejectUnauthorized: false,
+            require: true,
+            rejectUnauthorized: false,
         },
-      },
-      logging: false,
-    });
+    },
+    logging: false,
+});
 
-    await sequelize.authenticate();
-    console.log('PostgreSQL Connected...');
+async function connectDB() {
+    try {
+        if (!process.env.POSTGRES_URL) {
+            console.error('FATAL ERROR: POSTGRES_URL is not defined.');
+            process.exit(1);
+        }
+        await sequelize.authenticate();
+        console.log('PostgreSQL Connected Successfully.');
+    } catch (error) {
+        console.error('Unable to connect to the database:', error);
+        throw error;
+    }
+}
 
-  } catch (error) {
-    console.error('Unable to connect to the database:', error);
-    process.exit(1);
-  }
+function getSequelize() {
+    return sequelize;
+}
+
+module.exports = { 
+    connectDB, 
+    getSequelize,
+    sequelize
 };
-
-const getSequelize = () => sequelize;
-
-module.exports = { connectDB, getSequelize };

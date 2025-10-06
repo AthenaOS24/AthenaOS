@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -14,8 +13,7 @@ if (process.env.NODE_ENV !== 'production') {
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
+
   'https://athenafrontend-nine.vercel.app'
 ];
 

@@ -1,5 +1,3 @@
-// src/models/Conversation.js
-
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
