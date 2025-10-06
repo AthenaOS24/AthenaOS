@@ -1,5 +1,5 @@
 // src/controllers/authController.js
-const { models: { User } } = require('../config/demoDB');
+const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -39,7 +39,6 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-    
     const { email, password } = req.body;
 
     try {
@@ -84,3 +83,4 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
     res.json(req.user);
 };
+
