@@ -10,8 +10,10 @@ if (!process.env.DATABASE_URL) {
 
 console.log('Running with PostgreSQL (Neon).');
 
+// <<<< SỬA ĐỔI QUAN TRỌNG: Sử dụng đối tượng cấu hình thay vì truyền chuỗi URL trực tiếp >>>>
 sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
+    // Cấu hình SSL là bắt buộc cho Neon
     dialectOptions: {
         ssl: {
             require: true,
@@ -20,6 +22,7 @@ sequelize = new Sequelize(process.env.DATABASE_URL, {
     },
     logging: false,
 });
+// <<<< KẾT THÚC SỬA ĐỔI >>>>
 
 const connectDB = async () => {
     try {
