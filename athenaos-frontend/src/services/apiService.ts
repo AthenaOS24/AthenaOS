@@ -3,14 +3,13 @@ import axios from 'axios';
 import type { AuthResponse } from '../types';
 
 const IS_PROD = import.meta.env.PROD;
-const PROD_URL = 'https://athenabackend-825605376128.australia-southeast2.run.app/api';
+const PROD_URL = 'https://athenabackend.vercel.app/api';
 const LOCAL_URL = 'http://localhost:8888/api';
 
 export const API_URL = IS_PROD ? PROD_URL : LOCAL_URL;
 
 console.log(`API is running in ${IS_PROD ? 'production' : 'development'} mode. Endpoint: ${API_URL}`);
 
-// A function to handle user login
 export const loginUser = async (email: string, password: string) => {
   const response = await axios.post<AuthResponse>(`${API_URL}/auth/login`, {
     email,
@@ -19,7 +18,6 @@ export const loginUser = async (email: string, password: string) => {
   return response.data;
 };
 
-// A function to handle user registration
 export const registerUser = async (username: string, password: string, email: string) => {
   const response = await axios.post(`${API_URL}/auth/register`, {
     username,
