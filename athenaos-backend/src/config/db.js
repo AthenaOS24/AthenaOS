@@ -1,4 +1,5 @@
 // src/config/db.js
+require('pg');  // ép Sequelize load driver postgres
 const { Sequelize } = require('sequelize');
 
 if (!process.env.DATABASE_URL) {
@@ -8,14 +9,13 @@ if (!process.env.DATABASE_URL) {
 
 console.log('Running with PostgreSQL (Neon).');
 
-// Khởi tạo Sequelize với connection string
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
     protocol: 'postgres',
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false,  
+            rejectUnauthorized: false,
         },
     },
     logging: false,
@@ -32,4 +32,3 @@ const connectDB = async () => {
 };
 
 module.exports = { connectDB, sequelize };
- 
