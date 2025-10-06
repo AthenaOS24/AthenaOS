@@ -1,0 +1,13 @@
+# requirements.txt
+
+# Web framework
+fastapi
+uvicorn
+
+# Configuration
+python-dotenv
+
+# Groq API Client  
+groq
+
+requests
