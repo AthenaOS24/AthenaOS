@@ -1,8 +1,12 @@
 const { Sequelize } = require('sequelize');
 
-console.log("DEBUG: Checking POSTGRES_URL:", process.env.POSTGRES_URL);
+const dbUrl = process.env.POSTGRES_URL;
 
-const sequelize = new Sequelize(process.env.POSTGRES_URL, {
+if (!dbUrl) {
+  throw new Error(`FATAL_ERROR: POSTGRES_URL environment variable is NOT DEFINED! The value received was: ${dbUrl}`);
+}
+
+const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
   protocol: 'postgres',
   dialectOptions: {
