@@ -1,52 +1,40 @@
+// src/config/db.js
 const { Sequelize } = require('sequelize');
+const path = require('path');
 
-// Kiểm tra URL trước khi khởi tạo
-const dbUrl = process.env.POSTGRES_URL;
-if (!dbUrl) {
-    // Nếu không có URL, Sequelize sẽ thất bại.
-    // Chúng ta trả về một Sequelize instance tạm thời 
-    // HOẶC dùng một logic đặc biệt cho Vercel/Serverless.
-    console.error('FATAL ERROR: POSTGRES_URL is not defined when db.js is loaded.');
-    // Tuy nhiên, để cho phép Models import Sequelize, chúng ta phải tạo một instance.
-    // Cách an toàn hơn là thay đổi lại cấu trúc để Models không cần khởi tạo nó.
-    // NHƯNG vì bạn đang ở Serverless, chúng ta phải chấp nhận rủi ro này.
-    
-    // Nếu bạn đang cố gắng chạy local và Vercel, hãy đảm bảo rằng .env của bạn đã tải.
-    // Giả định bạn đã sửa dotenv trong server.js, chúng ta tiếp tục:
+let sequelize;
+
+if (process.env.NODE_ENV === 'production' && process.env.INSTANCE_CONNECTION_NAME) {
+    const dbUser = process.env.DB_USER; 
+    const dbPass = process.env.DB_PASSWORD;  
+    const dbName = process.env.DB_NAME;  
+    const instanceConnectionName = process.env.INSTANCE_CONNECTION_NAME;  
+    const dbSocketPath = `/cloudsql/${instanceConnectionName}`;
+
+    sequelize = new Sequelize(dbName, dbUser, dbPass, {
+        dialect: 'postgres',  
+        host: dbSocketPath,
+        dialectOptions: {
+            socketPath: dbSocketPath,
+        },
+        logging: false,
+    });
+} else {
+    console.log('Running in development mode, using SQLite.');
+    sequelize = new Sequelize({
+        dialect: 'sqlite',
+        storage: path.join(__dirname, '..', '..', 'database.sqlite')
+    });
 }
 
-const sequelize = new Sequelize(dbUrl, {
-    dialect: 'postgres',
-    protocol: 'postgres',
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false,
-        },
-    },
-    logging: false,
-});
-
-async function connectDB() {
+const connectDB = async () => {
     try {
-        if (!process.env.POSTGRES_URL) {
-            // Đây là lỗi nếu bạn gọi connectDB mà chưa có URL
-            throw new Error('POSTGRES_URL is missing.');
-        }
         await sequelize.authenticate();
-        console.log('PostgreSQL Connected Successfully.');
+        console.log('Database connection has been established successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);
-        throw error;
+        process.exit(1);  
     }
-}
-
-function getSequelize() {
-    return sequelize;
-}
-
-module.exports = { 
-    connectDB, 
-    getSequelize,
-    sequelize
 };
+
+module.exports = { connectDB, sequelize };

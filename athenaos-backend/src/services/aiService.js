@@ -23,7 +23,7 @@ exports.getAthenaAiResponse = async (userInput, dbMessages) => {
   };
 
   try {
-    console.log("Sending request to Python AI service on Railway...");
+    console.log("Sending request to Python AI service");
     const fullUrl = `${aiApiUrl}/chat`; 
     const response = await axios.post(fullUrl, payload, {
       timeout: 60000,
@@ -40,7 +40,7 @@ exports.getAthenaAiResponse = async (userInput, dbMessages) => {
       snippet);
 
     return {
-      response: "I'm sorry, I'm having trouble connecting to my core intelligence. Please try again in a moment.",
+      response: "I'm finding it difficult to process that specific thought. Could you perhaps try rephrasing it? I am still here to listen.",
       sentiment_analysis: {},
       emotion_analysis: {}
     };
