@@ -1,6 +1,6 @@
 // src/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { models: { User } } = require('../config/demoDB');
 
 module.exports = async function (req, res, next) {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -12,9 +12,7 @@ module.exports = async function (req, res, next) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = await User.findByPk(decoded.user.id, {
-            attributes: { exclude: ['password'] }
-        });
+        req.user = await User.findByPk(decoded.user.id);
 
         if (!req.user) {
             return res.status(401).json({ msg: 'User not found, authorization denied' });

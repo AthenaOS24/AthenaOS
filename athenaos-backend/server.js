@@ -2,7 +2,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const { connectDB, sequelize } = require('./src/config/db');
+const { connectDB } = require('./src/config/demoDB');
 const authRoutes = require('./src/routes/authRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const ttsRoutes = require('./src/routes/ttsRoutes'); 
@@ -10,8 +10,6 @@ const ttsRoutes = require('./src/routes/ttsRoutes');
 dotenv.config();
 
 const app = express();
-
-// --- Middleware ---
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -32,7 +30,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/tts', ttsRoutes);  
@@ -44,9 +41,6 @@ app.get('/', (req, res) => {
 const startServer = async () => {
     try {
         await connectDB();
-
-        await sequelize.sync();
-        console.log("All models were synchronized successfully.");
 
         const PORT = process.env.PORT || 8888;
         app.listen(PORT, () => {
