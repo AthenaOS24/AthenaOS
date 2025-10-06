@@ -1,6 +1,6 @@
 // src/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const { models: { User } } = require('../config/demoDB');
+const { User } = require('../models');
 
 module.exports = async function (req, res, next) {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -18,8 +18,8 @@ module.exports = async function (req, res, next) {
             return res.status(401).json({ msg: 'User not found, authorization denied' });
         }
 
-        next(); 
+        next();
     } catch (err) {
         res.status(401).json({ msg: 'Token is not valid' });
     }
-};
+}; 
