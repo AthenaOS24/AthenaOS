@@ -1,3 +1,4 @@
+// src/config/db.js
 const { Sequelize } = require('sequelize');
 
 let sequelize;
@@ -20,6 +21,7 @@ const connectDB = async () => {
           rejectUnauthorized: false,
         },
       },
+      logging: false,
     });
 
     await sequelize.authenticate();
