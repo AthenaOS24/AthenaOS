@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -11,12 +10,8 @@ dotenv.config();
 
 const app = express();
 
-// --- Middleware ---
-
 const allowedOrigins = [
-  'https://athena-825605376128.australia-southeast2.run.app',
-  'http://localhost:5173',
-  'http://localhost:5174'
+  'https://athenafrontend-nine.vercel.app'
 ];
 
 const corsOptions = {
@@ -33,7 +28,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/tts', ttsRoutes);  
@@ -54,7 +48,7 @@ const startServer = async () => {
             console.log(`Server is running on port ${PORT}`);
         });
 
-    } catch (error) {
+    } catch (error)  {
         console.error("FATAL: Failed to start the server due to an error:", error);
         process.exit(1);  
     }
