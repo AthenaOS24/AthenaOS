@@ -1,5 +1,5 @@
 // src/controllers/chatController.js
-const { models: { Conversation, Message } } = require('../config/demoDB');
+const { Conversation, Message } = require('../models');
 const { getAthenaAiResponse } = require('../services/aiService');
 
 exports.getChatHistory = async (req, res) => {
@@ -7,7 +7,7 @@ exports.getChatHistory = async (req, res) => {
     const conversations = await Conversation.findAll({
       where: { userId: req.user.id },
       include: [{
-        model: 'Message',
+        model: Message,
         as: 'messages',
       }],
       order: [['updatedAt', 'DESC']]
@@ -107,3 +107,4 @@ exports.getEmotionHistory = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+ 
