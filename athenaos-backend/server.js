@@ -11,8 +11,6 @@ dotenv.config();
 
 const app = express();
 
-// --- Middleware ---
-
 const allowedOrigins = [
   'https://athenafrontend-nine.vercel.app'
 ];
@@ -31,31 +29,27 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/tts', ttsRoutes);  
 
 app.get('/', (req, res) => {
-    res.send('API is running successfully!');
+  res.send('API is running successfully!');
 });
 
 const startServer = async () => {
-    try {
-        await connectDB();
-
-        await sequelize.sync();
-        console.log("All models were synchronized successfully.");
-
-        const PORT = process.env.PORT || 8888;
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
-        });
-
-    } catch (error) {
-        console.error("FATAL: Failed to start the server due to an error:", error);
-        process.exit(1);  
-    }
+  try {
+    await connectDB();
+    await sequelize.sync();
+    console.log("All models were synchronized successfully.");
+  } catch (error) {
+    console.error("FATAL: Failed to start the server due to an error:", error);
+    process.exit(1);  
+  }
 };
 
 startServer();
+
+// Vercel expects an exported handler
+module.exports = app;
+ 
