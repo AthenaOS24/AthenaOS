@@ -6,7 +6,9 @@ const authRoutes = require('./src/routes/authRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const ttsRoutes = require('./src/routes/ttsRoutes'); 
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 const app = express();
 
@@ -39,7 +41,6 @@ app.get('/', (req, res) => {
 const startServer = async () => {
     try {
         await connectDB();
-
         await sequelize.sync();
         console.log("All models were synchronized successfully.");
 
@@ -48,7 +49,7 @@ const startServer = async () => {
             console.log(`Server is running on port ${PORT}`);
         });
 
-    } catch (error)  {
+    } catch (error) {
         console.error("FATAL: Failed to start the server due to an error:", error);
         process.exit(1);  
     }
