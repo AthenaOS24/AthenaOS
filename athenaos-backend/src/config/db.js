@@ -10,9 +10,9 @@ if (!process.env.DATABASE_URL) {
 
 console.log('Running with PostgreSQL (Neon).');
 
-// SỬ DỤNG OBJECT CONFIG HOÀN TOÀN
+ 
 sequelize = new Sequelize({
-    url: process.env.DATABASE_URL, // Đặt URL vào property 'url'
+    url: process.env.DATABASE_URL,  
     dialect: 'postgres',
     dialectOptions: {
         ssl: {
