@@ -10,18 +10,19 @@ if (!process.env.DATABASE_URL) {
 
 console.log('Running with PostgreSQL (Neon).');
 
-// SỬ DỤNG PHƯƠNG PHÁP KHỞI TẠO BẰNG CHUỖI VÀ OPTIONS CỤ THỂ
-sequelize = new Sequelize(process.env.DATABASE_URL, {
+// SỬ DỤNG OBJECT CONFIG HOÀN TOÀN
+sequelize = new Sequelize({
+    url: process.env.DATABASE_URL, // Đặt URL vào property 'url'
     dialect: 'postgres',
     dialectOptions: {
-        // Cấu hình để buộc sử dụng SSL và chấp nhận tự ký (cho Neon)
         ssl: {
             require: true,
-            rejectUnauthorized: false 
+            rejectUnauthorized: false
         }
     },
     logging: false,
 });
+
 
 const connectDB = async () => {
     try {
@@ -29,10 +30,6 @@ const connectDB = async () => {
         console.log('Database connection has been established successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);
-        // THỬ LỖI NÀY CÓ PHẢI LÀ LỖI KẾT NỐI KHÔNG
-        if (error.original && error.original.code === 'EENOTFOUND') {
-            console.error("Connection failed. Check your DATABASE_URL and network access.");
-        }
         process.exit(1);  
     }
 };
