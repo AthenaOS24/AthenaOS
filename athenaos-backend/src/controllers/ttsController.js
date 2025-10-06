@@ -2,7 +2,9 @@
 const textToSpeech = require('@google-cloud/text-to-speech');
 const util = require('util');
 
-const client = new textToSpeech.TextToSpeechClient();
+const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const credentials = JSON.parse(credentialsJson);
+const client = new textToSpeech.TextToSpeechClient({ credentials });
 
 exports.synthesizeSpeech = async (req, res) => {
   const { text } = req.body;
