@@ -1,5 +1,5 @@
 // src/config/db.js
-require('pg');  // ép Sequelize load driver postgres
+require('pg');  
 const { Sequelize } = require('sequelize');
 
 if (!process.env.DATABASE_URL) {
