@@ -3,7 +3,7 @@ import { Box, Center, Overlay, Text, ThemeIcon, Title, Container, SimpleGrid, Im
 import { useState } from 'react';
 import { FaFeatherAlt, FaQuoteLeft } from 'react-icons/fa';
 import { IoIosArrowRoundForward, IoIosArrowRoundBack } from "react-icons/io";
-import { TbClockHour4, TbMessageChatbot, TbShieldCheck } from "react-icons/tb";
+import { TbClockHour4, TbMessageChatbot, TbShieldCheck, TbMicrophone } from "react-icons/tb";
 import { useAuthStore } from '../context/authStore';
 
 import heroImg from '../images/Hero.jpeg';
@@ -12,7 +12,7 @@ import wellbeingImg from '../images/WellBeing.jpeg';
 import logoImg from '../images/logo.jpg';
 import welcomeImg from '../images/WelcomePic.jpeg';
 
-const HeroSection = () => (
+const HeroSection = ({ onCTAClick }: { onCTAClick: (to: string) => void }) => (
   <Box
     mx={"calc(var(--app-shell-padding) * -1)"}
     pos="relative"
@@ -35,6 +35,27 @@ const HeroSection = () => (
         <Text size="xl" mt="md" style={{ fontFamily: "'Lato', sans-serif", letterSpacing: '0.05em' }}>
           Personalized Support for Your Mental Well-being
         </Text>
+
+        <Group justify="center" mt={40}>
+          <Button
+            size="lg"
+            radius="xl"
+            onClick={() => onCTAClick('/chat')}
+            leftSection={<TbMessageChatbot size={20} />}
+          >
+            Start Chat
+          </Button>
+          <Button
+            size="lg"
+            radius="xl"
+            variant="default"
+            onClick={() => onCTAClick('/voice')}
+            leftSection={<TbMicrophone size={20} />}
+          >
+            Try Voice
+          </Button>
+        </Group>
+
       </Box>
     </Center>
   </Box>
@@ -317,7 +338,7 @@ export function HomePage() {
         </Stack>
       </Modal>
 
-      <HeroSection />
+      <HeroSection onCTAClick={handleProtectedLinkClick} />
       <WelcomeSection />
       <HowCanWeHelpSection />
       <TestimonialsSection />
